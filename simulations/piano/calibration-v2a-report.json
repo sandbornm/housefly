@@ -1,0 +1,2975 @@
+{
+  "note": "Preserved earlier v2a experiments; neither met its promotion criterion",
+  "unmapped": {
+    "schema": 2,
+    "encoder": "flythoven-leg-tuples-v2",
+    "modelId": "male-cns-v1-lif-dt02-w5-v1",
+    "nodes": 139662,
+    "edges": 5536347,
+    "elapsedMs": 80069.29325,
+    "protocol": {
+      "neuralStepMs": 20,
+      "wallStepMs": 50,
+      "reset": "Once per complete phrase, matching playback loops; never per sample",
+      "training": [
+        {
+          "name": "original-96-a",
+          "seed": 931,
+          "bpm": 96,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "name": "original-88",
+          "seed": 947,
+          "bpm": 88,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "name": "rotation-96",
+          "seed": 953,
+          "bpm": 96,
+          "order": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "name": "original-96-b",
+          "seed": 967,
+          "bpm": 96,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "heldout": [
+        {
+          "name": "reversed-measures-84",
+          "seed": 1901,
+          "bpm": 84,
+          "order": [
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0
+          ]
+        },
+        {
+          "name": "rotation-five-100",
+          "seed": 2903,
+          "bpm": 100,
+          "order": [
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "epochs": 48,
+      "rate": 0.2,
+      "teacher": "Offline balanced cross-entropy on actual rate frames; no target-generated motor commands; evaluation weights frozen",
+      "collection": "Untrained free-running decoder and real actuator proprioception; same 20 ms recurrent advances as browser, nominal 50 ms wall request cadence",
+      "promotionRule": "At least +2 percentage points balanced accuracy, fewer wrong+extra+missed, and no fewer matched notes, fixed before evaluation"
+    },
+    "preserved": {
+      "../../docs/media/flythoven-neural.mp4": "7f1186a0450af40ac8d0b1d491b0e7cff5987e48aca7b00b83c8cbff2fcba921",
+      "../../docs/media/flythoven-neural.png": "669e23ffdb2623004f2b030e7d380d53b8966645912bc2c2c2f9f18b9557a1b1",
+      "./verification/neural-recording/report.json": "ac50da9ebfcb4a75fce020347a3bdccda7785545c818feb5b8fb6fc7fdacf725"
+    },
+    "results": {
+      "v1": {
+        "trainingFrames": 638,
+        "retainedRateBytes": 326656,
+        "updatesPerHead": [
+          30624,
+          30624,
+          30624,
+          30624,
+          30624,
+          30624
+        ],
+        "trials": [
+          {
+            "name": "reversed-measures-84",
+            "seed": 1901,
+            "bpm": 84,
+            "order": [
+              8,
+              7,
+              6,
+              5,
+              4,
+              3,
+              2,
+              1,
+              0
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 143,
+                  "count": 160
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 2,
+                  "count": 6
+                },
+                {
+                  "correct": 10,
+                  "count": 12
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 119,
+                  "count": 159
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 18,
+                  "count": 19
+                }
+              ],
+              [
+                {
+                  "correct": 141,
+                  "count": 161
+                },
+                {
+                  "correct": 3,
+                  "count": 7
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 7,
+                  "count": 10
+                }
+              ],
+              [
+                {
+                  "correct": 129,
+                  "count": 140
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 4,
+                  "count": 6
+                },
+                {
+                  "correct": 8,
+                  "count": 12
+                },
+                {
+                  "correct": 9,
+                  "count": 20
+                }
+              ],
+              [
+                {
+                  "correct": 60,
+                  "count": 104
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 4
+                },
+                {
+                  "correct": 26,
+                  "count": 30
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 17,
+                  "count": 25
+                },
+                {
+                  "correct": 15,
+                  "count": 15
+                }
+              ],
+              [
+                {
+                  "correct": 122,
+                  "count": 156
+                },
+                {
+                  "correct": 6,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 14,
+                  "count": 16
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 111,
+            "matched": 41,
+            "onTime": 17,
+            "wrong": 45,
+            "extra": 25,
+            "missed": 12,
+            "onsetMaeMs": 94.59930313588848,
+            "neuralSamples": 178,
+            "simulatedMs": 3560,
+            "totalSpikes": 160662,
+            "maxLatencyMs": 44.327957999998034
+          },
+          {
+            "name": "rotation-five-100",
+            "seed": 2903,
+            "bpm": 100,
+            "order": [
+              5,
+              6,
+              7,
+              8,
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 129,
+                  "count": 138
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 4
+                },
+                {
+                  "correct": 7,
+                  "count": 8
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 110,
+                  "count": 138
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 12,
+                  "count": 12
+                }
+              ],
+              [
+                {
+                  "correct": 119,
+                  "count": 138
+                },
+                {
+                  "correct": 1,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 8
+                }
+              ],
+              [
+                {
+                  "correct": 110,
+                  "count": 127
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 4
+                },
+                {
+                  "correct": 5,
+                  "count": 8
+                },
+                {
+                  "correct": 5,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 48,
+                  "count": 95
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 2
+                },
+                {
+                  "correct": 18,
+                  "count": 24
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 13,
+                  "count": 18
+                },
+                {
+                  "correct": 9,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 102,
+                  "count": 136
+                },
+                {
+                  "correct": 3,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 5,
+                  "count": 10
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 90,
+            "matched": 37,
+            "onTime": 15,
+            "wrong": 33,
+            "extra": 20,
+            "missed": 16,
+            "onsetMaeMs": 88.64864864864865,
+            "neuralSamples": 150,
+            "simulatedMs": 3000,
+            "totalSpikes": 120586,
+            "maxLatencyMs": 44.6417089999959
+          }
+        ],
+        "aggregate": {
+          "requested": 106,
+          "performed": 201,
+          "matched": 78,
+          "onTime": 32,
+          "wrong": 78,
+          "extra": 45,
+          "missed": 28,
+          "neuralSamples": 328,
+          "simulatedMs": 6560,
+          "totalSpikes": 281248,
+          "onsetMaeMs": 91.77655677655676,
+          "balancedAccuracy": 0.7114938709887029,
+          "activePitchAccuracy": 0.7246835443037974,
+          "perLeg": [
+            {
+              "legId": "L1",
+              "classes": [
+                {
+                  "count": 298,
+                  "correct": 272
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 10,
+                  "correct": 2
+                },
+                {
+                  "count": 20,
+                  "correct": 17
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                }
+              ]
+            },
+            {
+              "legId": "L2",
+              "classes": [
+                {
+                  "count": 297,
+                  "correct": 229
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 31,
+                  "correct": 30
+                }
+              ]
+            },
+            {
+              "legId": "L3",
+              "classes": [
+                {
+                  "count": 299,
+                  "correct": 260
+                },
+                {
+                  "count": 11,
+                  "correct": 4
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 18,
+                  "correct": 13
+                }
+              ]
+            },
+            {
+              "legId": "R1",
+              "classes": [
+                {
+                  "count": 267,
+                  "correct": 239
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 10,
+                  "correct": 7
+                },
+                {
+                  "count": 20,
+                  "correct": 13
+                },
+                {
+                  "count": 31,
+                  "correct": 14
+                }
+              ]
+            },
+            {
+              "legId": "R2",
+              "classes": [
+                {
+                  "count": 199,
+                  "correct": 108
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 6,
+                  "correct": 3
+                },
+                {
+                  "count": 54,
+                  "correct": 44
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 43,
+                  "correct": 30
+                },
+                {
+                  "count": 26,
+                  "correct": 24
+                }
+              ]
+            },
+            {
+              "legId": "R3",
+              "classes": [
+                {
+                  "count": 292,
+                  "correct": 224
+                },
+                {
+                  "count": 10,
+                  "correct": 9
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 26,
+                  "correct": 19
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "v2": {
+        "trainingFrames": 638,
+        "retainedRateBytes": 326656,
+        "updatesPerHead": [
+          30624,
+          30624,
+          30624,
+          30624,
+          30624,
+          30624
+        ],
+        "trials": [
+          {
+            "name": "reversed-measures-84",
+            "seed": 1901,
+            "bpm": 84,
+            "order": [
+              8,
+              7,
+              6,
+              5,
+              4,
+              3,
+              2,
+              1,
+              0
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 150,
+                  "count": 160
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 6
+                },
+                {
+                  "correct": 12,
+                  "count": 12
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 152,
+                  "count": 159
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 19,
+                  "count": 19
+                }
+              ],
+              [
+                {
+                  "correct": 147,
+                  "count": 161
+                },
+                {
+                  "correct": 2,
+                  "count": 7
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 10,
+                  "count": 10
+                }
+              ],
+              [
+                {
+                  "correct": 126,
+                  "count": 140
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 6
+                },
+                {
+                  "correct": 2,
+                  "count": 12
+                },
+                {
+                  "correct": 11,
+                  "count": 20
+                }
+              ],
+              [
+                {
+                  "correct": 79,
+                  "count": 104
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 1,
+                  "count": 4
+                },
+                {
+                  "correct": 26,
+                  "count": 30
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 7,
+                  "count": 25
+                },
+                {
+                  "correct": 12,
+                  "count": 15
+                }
+              ],
+              [
+                {
+                  "correct": 140,
+                  "count": 156
+                },
+                {
+                  "correct": 6,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 10,
+                  "count": 16
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 63,
+            "matched": 37,
+            "onTime": 24,
+            "wrong": 24,
+            "extra": 2,
+            "missed": 16,
+            "onsetMaeMs": 70.00000000000003,
+            "neuralSamples": 178,
+            "simulatedMs": 3560,
+            "totalSpikes": 135371,
+            "maxLatencyMs": 45.073374999992666
+          },
+          {
+            "name": "rotation-five-100",
+            "seed": 2903,
+            "bpm": 100,
+            "order": [
+              5,
+              6,
+              7,
+              8,
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 125,
+                  "count": 138
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 2,
+                  "count": 4
+                },
+                {
+                  "correct": 3,
+                  "count": 8
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 131,
+                  "count": 138
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 10,
+                  "count": 12
+                }
+              ],
+              [
+                {
+                  "correct": 120,
+                  "count": 138
+                },
+                {
+                  "correct": 2,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 5,
+                  "count": 8
+                }
+              ],
+              [
+                {
+                  "correct": 106,
+                  "count": 127
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 1,
+                  "count": 4
+                },
+                {
+                  "correct": 2,
+                  "count": 8
+                },
+                {
+                  "correct": 8,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 69,
+                  "count": 95
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 1,
+                  "count": 2
+                },
+                {
+                  "correct": 18,
+                  "count": 24
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 8,
+                  "count": 18
+                },
+                {
+                  "correct": 5,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 122,
+                  "count": 136
+                },
+                {
+                  "correct": 2,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 7,
+                  "count": 10
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 57,
+            "matched": 34,
+            "onTime": 15,
+            "wrong": 22,
+            "extra": 1,
+            "missed": 19,
+            "onsetMaeMs": 81.47058823529412,
+            "neuralSamples": 150,
+            "simulatedMs": 3000,
+            "totalSpikes": 93241,
+            "maxLatencyMs": 44.14216699999815
+          }
+        ],
+        "aggregate": {
+          "requested": 106,
+          "performed": 120,
+          "matched": 71,
+          "onTime": 39,
+          "wrong": 46,
+          "extra": 3,
+          "missed": 35,
+          "neuralSamples": 328,
+          "simulatedMs": 6560,
+          "totalSpikes": 228612,
+          "onsetMaeMs": 75.49295774647888,
+          "balancedAccuracy": 0.6739292258469513,
+          "activePitchAccuracy": 0.6265822784810127,
+          "perLeg": [
+            {
+              "legId": "L1",
+              "classes": [
+                {
+                  "count": 298,
+                  "correct": 275
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 10,
+                  "correct": 5
+                },
+                {
+                  "count": 20,
+                  "correct": 15
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                }
+              ]
+            },
+            {
+              "legId": "L2",
+              "classes": [
+                {
+                  "count": 297,
+                  "correct": 283
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 31,
+                  "correct": 29
+                }
+              ]
+            },
+            {
+              "legId": "L3",
+              "classes": [
+                {
+                  "count": 299,
+                  "correct": 267
+                },
+                {
+                  "count": 11,
+                  "correct": 4
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 18,
+                  "correct": 15
+                }
+              ]
+            },
+            {
+              "legId": "R1",
+              "classes": [
+                {
+                  "count": 267,
+                  "correct": 232
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 10,
+                  "correct": 4
+                },
+                {
+                  "count": 20,
+                  "correct": 4
+                },
+                {
+                  "count": 31,
+                  "correct": 19
+                }
+              ]
+            },
+            {
+              "legId": "R2",
+              "classes": [
+                {
+                  "count": 199,
+                  "correct": 148
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 6,
+                  "correct": 2
+                },
+                {
+                  "count": 54,
+                  "correct": 44
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 43,
+                  "correct": 15
+                },
+                {
+                  "count": 26,
+                  "correct": 17
+                }
+              ]
+            },
+            {
+              "legId": "R3",
+              "classes": [
+                {
+                  "count": 292,
+                  "correct": 262
+                },
+                {
+                  "count": 10,
+                  "correct": 8
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 26,
+                  "correct": 17
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "improved": false,
+    "limitations": "Small held-out set; assumed LIF dynamics and engineered interfaces, not measured fly cognition. Offline 50 ms wall cadence approximates variable browser latency. Training proprioception comes from the untrained controller; frozen policy changes that distribution."
+  },
+  "mapped": {
+    "schema": 2,
+    "encoder": "flythoven-leg-tuples-v2",
+    "modelId": "male-cns-v1-lif-dt02-w5-v1",
+    "nodes": 139662,
+    "edges": 5536347,
+    "elapsedMs": 79402.925959,
+    "inputProfile": {
+      "id": "flythoven-leg-tuples-v2-map-e3aec4b44be3",
+      "channels": [
+        0,
+        17,
+        4,
+        15,
+        2,
+        1,
+        22,
+        10,
+        25,
+        3,
+        30,
+        8,
+        14,
+        5,
+        11,
+        7,
+        12,
+        18,
+        6,
+        23,
+        19,
+        29,
+        28,
+        20,
+        16,
+        26,
+        9,
+        27,
+        21,
+        31,
+        13,
+        24
+      ],
+      "gains": [
+        0.46328455313186373,
+        0.7765155224272516,
+        0.5,
+        0.5,
+        0.7661809966906349,
+        0.7468984644746415,
+        0.5,
+        0.5,
+        1,
+        1,
+        0.5,
+        0.5,
+        0.7129605506019295,
+        0.7547612366240363,
+        0.5,
+        0.5,
+        0.9768839868477318,
+        1,
+        0.5,
+        0.5,
+        1,
+        0.8836392239844144,
+        0.5,
+        0.5,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.25,
+        0.25
+      ]
+    },
+    "previousExperiment": "Unmapped v2 failed promotion; its completed test is now validation data, not reused here. A mapped baseline run was aborted to fix the decoder confound; no metrics inspected, and its seeds/orders were discarded.",
+    "protocol": {
+      "neuralStepMs": 20,
+      "wallStepMs": 50,
+      "reset": "Once per complete phrase, matching playback loops; never per sample",
+      "training": [
+        {
+          "name": "original-96-a",
+          "seed": 931,
+          "bpm": 96,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "name": "original-88",
+          "seed": 947,
+          "bpm": 88,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "name": "rotation-96",
+          "seed": 953,
+          "bpm": 96,
+          "order": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "name": "original-96-b",
+          "seed": 967,
+          "bpm": 96,
+          "order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "heldout": [
+        {
+          "name": "reverse-rotation-four-82",
+          "seed": 8101,
+          "bpm": 82,
+          "order": [
+            3,
+            2,
+            1,
+            0,
+            8,
+            7,
+            6,
+            5,
+            4
+          ]
+        },
+        {
+          "name": "odd-even-measures-94",
+          "seed": 9109,
+          "bpm": 94,
+          "order": [
+            1,
+            3,
+            5,
+            7,
+            0,
+            2,
+            4,
+            6,
+            8
+          ]
+        }
+      ],
+      "epochs": 48,
+      "rate": 0.2,
+      "decoderComparison": "Both encoders use identical edge-trigger logic; no 150 ms repeat in either",
+      "inputProbe": "Shared graph diagnostic, 768 unlabeled 20 ms frames, seeds 42/101; v2 projection fitted before final test; not additional supervised examples",
+      "teacher": "Offline balanced cross-entropy on actual rate frames; no target-generated motor commands; evaluation weights frozen",
+      "collection": "Untrained free-running decoder and real actuator proprioception; same 20 ms recurrent advances as browser, nominal 50 ms wall request cadence",
+      "promotionRule": "At least +2 percentage points balanced accuracy, fewer wrong+extra+missed, and no fewer matched notes, fixed before evaluation"
+    },
+    "preserved": {
+      "../../docs/media/flythoven-neural.mp4": "7f1186a0450af40ac8d0b1d491b0e7cff5987e48aca7b00b83c8cbff2fcba921",
+      "../../docs/media/flythoven-neural.png": "669e23ffdb2623004f2b030e7d380d53b8966645912bc2c2c2f9f18b9557a1b1",
+      "./verification/neural-recording/report.json": "ac50da9ebfcb4a75fce020347a3bdccda7785545c818feb5b8fb6fc7fdacf725"
+    },
+    "results": {
+      "v1": {
+        "trainingFrames": 638,
+        "retainedRateBytes": 326656,
+        "updatesPerHead": [
+          30624,
+          30624,
+          30624,
+          30624,
+          30624,
+          30624
+        ],
+        "trials": [
+          {
+            "name": "reverse-rotation-four-82",
+            "seed": 8101,
+            "bpm": 82,
+            "order": [
+              3,
+              2,
+              1,
+              0,
+              8,
+              7,
+              6,
+              5,
+              4
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 133,
+                  "count": 162
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 7
+                },
+                {
+                  "correct": 13,
+                  "count": 13
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 149,
+                  "count": 163
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 18,
+                  "count": 19
+                }
+              ],
+              [
+                {
+                  "correct": 139,
+                  "count": 165
+                },
+                {
+                  "correct": 4,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 13
+                }
+              ],
+              [
+                {
+                  "correct": 128,
+                  "count": 143
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 7,
+                  "count": 7
+                },
+                {
+                  "correct": 9,
+                  "count": 12
+                },
+                {
+                  "correct": 10,
+                  "count": 20
+                }
+              ],
+              [
+                {
+                  "correct": 74,
+                  "count": 106
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 3
+                },
+                {
+                  "correct": 26,
+                  "count": 33
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 12,
+                  "count": 24
+                },
+                {
+                  "correct": 15,
+                  "count": 16
+                }
+              ],
+              [
+                {
+                  "correct": 115,
+                  "count": 161
+                },
+                {
+                  "correct": 5,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 11,
+                  "count": 15
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 71,
+            "matched": 41,
+            "onTime": 22,
+            "wrong": 30,
+            "extra": 0,
+            "missed": 12,
+            "onsetMaeMs": 61.91552647233794,
+            "neuralSamples": 182,
+            "simulatedMs": 3640,
+            "totalSpikes": 153518,
+            "maxLatencyMs": 46.35883399999875
+          },
+          {
+            "name": "odd-even-measures-94",
+            "seed": 9109,
+            "bpm": 94,
+            "order": [
+              1,
+              3,
+              5,
+              7,
+              0,
+              2,
+              4,
+              6,
+              8
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 117,
+                  "count": 142
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 6
+                },
+                {
+                  "correct": 11,
+                  "count": 12
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 133,
+                  "count": 143
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 15,
+                  "count": 17
+                }
+              ],
+              [
+                {
+                  "correct": 128,
+                  "count": 144
+                },
+                {
+                  "correct": 0,
+                  "count": 5
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 117,
+                  "count": 129
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 4,
+                  "count": 5
+                },
+                {
+                  "correct": 2,
+                  "count": 10
+                },
+                {
+                  "correct": 12,
+                  "count": 16
+                }
+              ],
+              [
+                {
+                  "correct": 76,
+                  "count": 95
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 3
+                },
+                {
+                  "correct": 22,
+                  "count": 27
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 22
+                },
+                {
+                  "correct": 13,
+                  "count": 13
+                }
+              ],
+              [
+                {
+                  "correct": 93,
+                  "count": 139
+                },
+                {
+                  "correct": 3,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 13,
+                  "count": 15
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 63,
+            "matched": 34,
+            "onTime": 23,
+            "wrong": 26,
+            "extra": 3,
+            "missed": 19,
+            "onsetMaeMs": 59.74342928660821,
+            "neuralSamples": 160,
+            "simulatedMs": 3200,
+            "totalSpikes": 134595,
+            "maxLatencyMs": 44.51695800000016
+          }
+        ],
+        "aggregate": {
+          "requested": 106,
+          "performed": 134,
+          "matched": 75,
+          "onTime": 45,
+          "wrong": 56,
+          "extra": 3,
+          "missed": 31,
+          "neuralSamples": 342,
+          "simulatedMs": 6840,
+          "totalSpikes": 288113,
+          "onsetMaeMs": 60.93084241480713,
+          "balancedAccuracy": 0.71094030352059,
+          "activePitchAccuracy": 0.7,
+          "perLeg": [
+            {
+              "legId": "L1",
+              "classes": [
+                {
+                  "count": 304,
+                  "correct": 250
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 13,
+                  "correct": 12
+                },
+                {
+                  "count": 25,
+                  "correct": 24
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                }
+              ]
+            },
+            {
+              "legId": "L2",
+              "classes": [
+                {
+                  "count": 306,
+                  "correct": 282
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 36,
+                  "correct": 33
+                }
+              ]
+            },
+            {
+              "legId": "L3",
+              "classes": [
+                {
+                  "count": 309,
+                  "correct": 267
+                },
+                {
+                  "count": 9,
+                  "correct": 4
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 24,
+                  "correct": 9
+                }
+              ]
+            },
+            {
+              "legId": "R1",
+              "classes": [
+                {
+                  "count": 272,
+                  "correct": 245
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 12,
+                  "correct": 11
+                },
+                {
+                  "count": 22,
+                  "correct": 11
+                },
+                {
+                  "count": 36,
+                  "correct": 22
+                }
+              ]
+            },
+            {
+              "legId": "R2",
+              "classes": [
+                {
+                  "count": 201,
+                  "correct": 150
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 6,
+                  "correct": 0
+                },
+                {
+                  "count": 60,
+                  "correct": 48
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 46,
+                  "correct": 18
+                },
+                {
+                  "count": 29,
+                  "correct": 28
+                }
+              ]
+            },
+            {
+              "legId": "R3",
+              "classes": [
+                {
+                  "count": 300,
+                  "correct": 208
+                },
+                {
+                  "count": 12,
+                  "correct": 8
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 30,
+                  "correct": 24
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "v2": {
+        "trainingFrames": 638,
+        "retainedRateBytes": 326656,
+        "updatesPerHead": [
+          30624,
+          30624,
+          30624,
+          30624,
+          30624,
+          30624
+        ],
+        "trials": [
+          {
+            "name": "reverse-rotation-four-82",
+            "seed": 8101,
+            "bpm": 82,
+            "order": [
+              3,
+              2,
+              1,
+              0,
+              8,
+              7,
+              6,
+              5,
+              4
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 132,
+                  "count": 162
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 7,
+                  "count": 7
+                },
+                {
+                  "correct": 8,
+                  "count": 13
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 157,
+                  "count": 163
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 17,
+                  "count": 19
+                }
+              ],
+              [
+                {
+                  "correct": 150,
+                  "count": 165
+                },
+                {
+                  "correct": 2,
+                  "count": 4
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 9,
+                  "count": 13
+                }
+              ],
+              [
+                {
+                  "correct": 120,
+                  "count": 143
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 7
+                },
+                {
+                  "correct": 9,
+                  "count": 12
+                },
+                {
+                  "correct": 9,
+                  "count": 20
+                }
+              ],
+              [
+                {
+                  "correct": 71,
+                  "count": 106
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 3
+                },
+                {
+                  "correct": 14,
+                  "count": 33
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 19,
+                  "count": 24
+                },
+                {
+                  "correct": 7,
+                  "count": 16
+                }
+              ],
+              [
+                {
+                  "correct": 143,
+                  "count": 161
+                },
+                {
+                  "correct": 2,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 11,
+                  "count": 15
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 75,
+            "matched": 39,
+            "onTime": 17,
+            "wrong": 34,
+            "extra": 2,
+            "missed": 14,
+            "onsetMaeMs": 80.0750469043152,
+            "neuralSamples": 182,
+            "simulatedMs": 3640,
+            "totalSpikes": 136208,
+            "maxLatencyMs": 42.54170799998974
+          },
+          {
+            "name": "odd-even-measures-94",
+            "seed": 9109,
+            "bpm": 94,
+            "order": [
+              1,
+              3,
+              5,
+              7,
+              0,
+              2,
+              4,
+              6,
+              8
+            ],
+            "confusion": [
+              [
+                {
+                  "correct": 113,
+                  "count": 142
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 2,
+                  "count": 6
+                },
+                {
+                  "correct": 8,
+                  "count": 12
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                }
+              ],
+              [
+                {
+                  "correct": 130,
+                  "count": 143
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 16,
+                  "count": 17
+                }
+              ],
+              [
+                {
+                  "correct": 131,
+                  "count": 144
+                },
+                {
+                  "correct": 3,
+                  "count": 5
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 6,
+                  "count": 11
+                }
+              ],
+              [
+                {
+                  "correct": 110,
+                  "count": 129
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 3,
+                  "count": 5
+                },
+                {
+                  "correct": 5,
+                  "count": 10
+                },
+                {
+                  "correct": 5,
+                  "count": 16
+                }
+              ],
+              [
+                {
+                  "correct": 58,
+                  "count": 95
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 3
+                },
+                {
+                  "correct": 22,
+                  "count": 27
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 17,
+                  "count": 22
+                },
+                {
+                  "correct": 7,
+                  "count": 13
+                }
+              ],
+              [
+                {
+                  "correct": 123,
+                  "count": 139
+                },
+                {
+                  "correct": 6,
+                  "count": 6
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 0,
+                  "count": 0
+                },
+                {
+                  "correct": 13,
+                  "count": 15
+                }
+              ]
+            ],
+            "requested": 53,
+            "performed": 66,
+            "matched": 41,
+            "onTime": 27,
+            "wrong": 23,
+            "extra": 2,
+            "missed": 12,
+            "onsetMaeMs": 64.76388168136998,
+            "neuralSamples": 160,
+            "simulatedMs": 3200,
+            "totalSpikes": 84077,
+            "maxLatencyMs": 63.227624999999534
+          }
+        ],
+        "aggregate": {
+          "requested": 106,
+          "performed": 141,
+          "matched": 80,
+          "onTime": 44,
+          "wrong": 57,
+          "extra": 4,
+          "missed": 26,
+          "neuralSamples": 342,
+          "simulatedMs": 6840,
+          "totalSpikes": 220285,
+          "onsetMaeMs": 72.22807472755578,
+          "balancedAccuracy": 0.6657038516080027,
+          "activePitchAccuracy": 0.6388888888888888,
+          "perLeg": [
+            {
+              "legId": "L1",
+              "classes": [
+                {
+                  "count": 304,
+                  "correct": 245
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 13,
+                  "correct": 9
+                },
+                {
+                  "count": 25,
+                  "correct": 16
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                }
+              ]
+            },
+            {
+              "legId": "L2",
+              "classes": [
+                {
+                  "count": 306,
+                  "correct": 287
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 36,
+                  "correct": 33
+                }
+              ]
+            },
+            {
+              "legId": "L3",
+              "classes": [
+                {
+                  "count": 309,
+                  "correct": 281
+                },
+                {
+                  "count": 9,
+                  "correct": 5
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 24,
+                  "correct": 15
+                }
+              ]
+            },
+            {
+              "legId": "R1",
+              "classes": [
+                {
+                  "count": 272,
+                  "correct": 230
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 12,
+                  "correct": 6
+                },
+                {
+                  "count": 22,
+                  "correct": 14
+                },
+                {
+                  "count": 36,
+                  "correct": 14
+                }
+              ]
+            },
+            {
+              "legId": "R2",
+              "classes": [
+                {
+                  "count": 201,
+                  "correct": 129
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 6,
+                  "correct": 0
+                },
+                {
+                  "count": 60,
+                  "correct": 36
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 46,
+                  "correct": 36
+                },
+                {
+                  "count": 29,
+                  "correct": 14
+                }
+              ]
+            },
+            {
+              "legId": "R3",
+              "classes": [
+                {
+                  "count": 300,
+                  "correct": 266
+                },
+                {
+                  "count": 12,
+                  "correct": 8
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 0,
+                  "correct": 0
+                },
+                {
+                  "count": 30,
+                  "correct": 24
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "improved": false,
+    "limitations": "Small held-out set; assumed LIF dynamics and engineered interfaces, not measured fly cognition. Offline 50 ms wall cadence approximates variable browser latency. Training proprioception comes from the untrained controller; frozen policy changes that distribution."
+  }
+}

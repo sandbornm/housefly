@@ -1,0 +1,1745 @@
+{
+  "schema": 3,
+  "encoder": "flythoven-associated-pitch-v2b",
+  "architecture": "pitch-strike-v1",
+  "modelId": "male-cns-v1-lif-dt02-w5-v1",
+  "nodes": 139662,
+  "edges": 5536347,
+  "protocol": {
+    "encoder": "flythoven-associated-pitch-v2b",
+    "variants": [
+      "v1-edge",
+      "v1-dual",
+      "associated-dual"
+    ],
+    "training": [
+      {
+        "seed": 931,
+        "bpm": 96,
+        "order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "seed": 947,
+        "bpm": 88,
+        "order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "seed": 953,
+        "bpm": 96,
+        "order": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "seed": 967,
+        "bpm": 96,
+        "order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    ],
+    "validation": [
+      {
+        "seed": 1901,
+        "bpm": 84,
+        "order": [
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ]
+      },
+      {
+        "seed": 2903,
+        "bpm": 100,
+        "order": [
+          5,
+          6,
+          7,
+          8,
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      }
+    ],
+    "finalTest": [
+      {
+        "seed": 12007,
+        "bpm": 86,
+        "order": [
+          4,
+          0,
+          7,
+          2,
+          8,
+          5,
+          1,
+          6,
+          3
+        ]
+      },
+      {
+        "seed": 16001,
+        "bpm": 98,
+        "order": [
+          6,
+          2,
+          5,
+          8,
+          1,
+          4,
+          0,
+          3,
+          7
+        ]
+      }
+    ],
+    "epochs": 48,
+    "learningRate": 0.2,
+    "neuralStepMs": 20,
+    "wallStepMs": 50,
+    "teacherStrikeWindowMs": [
+      20,
+      100
+    ],
+    "recurrence": "20 ms continuous neural advances with 50 ms nominal wall/actuator steps; reset only per full phrase, never per sample",
+    "comparisons": "v1-edge versus v1-dual isolates learned gating; v1-dual versus associated-dual uses identical pitch/strike heads and changes only sensory encoding",
+    "finalRule": "Associated dual must match at least as many targets as both controls; reduce wrong+extra+missed at least 10% versus v1-edge and not increase it versus v1-dual; no fewer on-time notes than v1-edge and no >2 percentage-point pitch accuracy loss versus either control",
+    "selection": "All three predefined variants evaluated; no tuning after validation or final test; no performance-based recording selection",
+    "previousTests": "1901/2903 are now validation. 8101/9109 and aborted 4909 are not reused as final tests."
+  },
+  "results": {
+    "v1-edge": {
+      "trainingFrames": 638,
+      "retainedRateBytes": 326656,
+      "updatesPerHead": [
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624
+      ],
+      "validationTrials": [
+        {
+          "seed": 1901,
+          "bpm": 84,
+          "order": [
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0
+          ],
+          "requested": 53,
+          "performed": 57,
+          "matched": 30,
+          "wrong": 23,
+          "extra": 4,
+          "missed": 23,
+          "onTime": 11,
+          "onsetAbsoluteErrorSum": 2895.714285714286,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 15,
+              "pitchCount": 18,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 13
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 12,
+              "pitchCount": 19,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 6
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 9,
+              "pitchCount": 17,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 7
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 17,
+              "pitchCount": 38,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 8
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 35,
+              "pitchCount": 74,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 14
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 11,
+              "pitchCount": 22,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 9
+            }
+          ],
+          "frames": 178,
+          "totalSpikes": 702060,
+          "simulatedMs": 3560
+        },
+        {
+          "seed": 2903,
+          "bpm": 100,
+          "order": [
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "requested": 53,
+          "performed": 63,
+          "matched": 40,
+          "wrong": 22,
+          "extra": 1,
+          "missed": 13,
+          "onTime": 18,
+          "onsetAbsoluteErrorSum": 3370,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 10,
+              "pitchCount": 12,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 7
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 11,
+              "pitchCount": 12,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 7
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 5,
+              "pitchCount": 12,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 8
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 13,
+              "pitchCount": 23,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 9
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 34,
+              "pitchCount": 55,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 18
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 13,
+              "pitchCount": 14,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 14
+            }
+          ],
+          "frames": 150,
+          "totalSpikes": 110434,
+          "simulatedMs": 3000
+        }
+      ],
+      "validation": {
+        "requested": 106,
+        "performed": 120,
+        "matched": 70,
+        "wrong": 45,
+        "extra": 5,
+        "missed": 36,
+        "onTime": 29,
+        "onsetAbsoluteErrorSum": 6265.714285714286,
+        "frames": 328,
+        "simulatedMs": 6560,
+        "totalSpikes": 812494,
+        "onsetMaeMs": 89.51020408163266,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 25,
+            "pitchCount": 30,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 20
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 23,
+            "pitchCount": 31,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 13
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 14,
+            "pitchCount": 29,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 15
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 30,
+            "pitchCount": 61,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 17
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 69,
+            "pitchCount": 129,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 32
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 24,
+            "pitchCount": 36,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 23
+          }
+        ],
+        "activePitchAccuracy": 0.5854430379746836
+      },
+      "finalTrials": [
+        {
+          "seed": 12007,
+          "bpm": 86,
+          "order": [
+            4,
+            0,
+            7,
+            2,
+            8,
+            5,
+            1,
+            6,
+            3
+          ],
+          "requested": 53,
+          "performed": 63,
+          "matched": 40,
+          "wrong": 22,
+          "extra": 1,
+          "missed": 13,
+          "onTime": 23,
+          "onsetAbsoluteErrorSum": 2464.1860465116274,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 16,
+              "pitchCount": 18,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 10
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 17,
+              "pitchCount": 18,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 8
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 10,
+              "pitchCount": 16,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 9
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 24,
+              "pitchCount": 37,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 11
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 53,
+              "pitchCount": 71,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 15
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 18,
+              "pitchCount": 21,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 10
+            }
+          ],
+          "frames": 174,
+          "totalSpikes": 137951,
+          "simulatedMs": 3480
+        },
+        {
+          "seed": 16001,
+          "bpm": 98,
+          "order": [
+            6,
+            2,
+            5,
+            8,
+            1,
+            4,
+            0,
+            3,
+            7
+          ],
+          "requested": 53,
+          "performed": 70,
+          "matched": 35,
+          "wrong": 34,
+          "extra": 1,
+          "missed": 18,
+          "onTime": 24,
+          "onsetAbsoluteErrorSum": 2084.693877551021,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 14,
+              "pitchCount": 16,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 8
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 14,
+              "pitchCount": 15,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 8
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 4,
+              "pitchCount": 14,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 10
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 15,
+              "pitchCount": 32,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 9
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 45,
+              "pitchCount": 64,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 19
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 15,
+              "pitchCount": 19,
+              "gateTP": 0,
+              "gateFP": 0,
+              "gateFN": 0,
+              "gateTN": 0,
+              "contacts": 16
+            }
+          ],
+          "frames": 153,
+          "totalSpikes": 137219,
+          "simulatedMs": 3060
+        }
+      ],
+      "final": {
+        "requested": 106,
+        "performed": 133,
+        "matched": 75,
+        "wrong": 56,
+        "extra": 2,
+        "missed": 31,
+        "onTime": 47,
+        "onsetAbsoluteErrorSum": 4548.879924062649,
+        "frames": 327,
+        "simulatedMs": 6540,
+        "totalSpikes": 275170,
+        "onsetMaeMs": 60.651732320835315,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 30,
+            "pitchCount": 34,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 18
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 31,
+            "pitchCount": 33,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 16
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 14,
+            "pitchCount": 30,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 19
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 39,
+            "pitchCount": 69,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 20
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 98,
+            "pitchCount": 135,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 34
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 33,
+            "pitchCount": 40,
+            "gateTP": 0,
+            "gateFP": 0,
+            "gateFN": 0,
+            "gateTN": 0,
+            "contacts": 26
+          }
+        ],
+        "activePitchAccuracy": 0.718475073313783
+      }
+    },
+    "v1-dual": {
+      "trainingFrames": 638,
+      "retainedRateBytes": 326656,
+      "updatesPerHead": [
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624
+      ],
+      "validationTrials": [
+        {
+          "seed": 1901,
+          "bpm": 84,
+          "order": [
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0
+          ],
+          "requested": 53,
+          "performed": 55,
+          "matched": 33,
+          "wrong": 20,
+          "extra": 2,
+          "missed": 20,
+          "onTime": 17,
+          "onsetAbsoluteErrorSum": 2691.428571428571,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 17,
+              "pitchCount": 18,
+              "gateTP": 8,
+              "gateFP": 15,
+              "gateFN": 2,
+              "gateTN": 153,
+              "contacts": 5
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 19,
+              "pitchCount": 19,
+              "gateTP": 8,
+              "gateFP": 14,
+              "gateFN": 1,
+              "gateTN": 155,
+              "contacts": 8
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 15,
+              "pitchCount": 17,
+              "gateTP": 5,
+              "gateFP": 16,
+              "gateFN": 4,
+              "gateTN": 153,
+              "contacts": 9
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 29,
+              "pitchCount": 38,
+              "gateTP": 6,
+              "gateFP": 10,
+              "gateFN": 13,
+              "gateTN": 149,
+              "contacts": 4
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 59,
+              "pitchCount": 74,
+              "gateTP": 15,
+              "gateFP": 38,
+              "gateFN": 11,
+              "gateTN": 114,
+              "contacts": 16
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 17,
+              "pitchCount": 22,
+              "gateTP": 8,
+              "gateFP": 36,
+              "gateFN": 3,
+              "gateTN": 131,
+              "contacts": 13
+            }
+          ],
+          "frames": 178,
+          "totalSpikes": 154014,
+          "simulatedMs": 3560
+        },
+        {
+          "seed": 2903,
+          "bpm": 100,
+          "order": [
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "requested": 53,
+          "performed": 50,
+          "matched": 34,
+          "wrong": 13,
+          "extra": 3,
+          "missed": 19,
+          "onTime": 18,
+          "onsetAbsoluteErrorSum": 2730,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 12,
+              "pitchCount": 12,
+              "gateTP": 5,
+              "gateFP": 21,
+              "gateFN": 1,
+              "gateTN": 123,
+              "contacts": 7
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 12,
+              "pitchCount": 12,
+              "gateTP": 4,
+              "gateFP": 8,
+              "gateFN": 2,
+              "gateTN": 136,
+              "contacts": 7
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 9,
+              "pitchCount": 12,
+              "gateTP": 3,
+              "gateFP": 12,
+              "gateFN": 3,
+              "gateTN": 132,
+              "contacts": 6
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 16,
+              "pitchCount": 23,
+              "gateTP": 4,
+              "gateFP": 12,
+              "gateFN": 7,
+              "gateTN": 127,
+              "contacts": 5
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 42,
+              "pitchCount": 55,
+              "gateTP": 8,
+              "gateFP": 36,
+              "gateFN": 8,
+              "gateTN": 98,
+              "contacts": 11
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 12,
+              "pitchCount": 14,
+              "gateTP": 3,
+              "gateFP": 35,
+              "gateFN": 4,
+              "gateTN": 108,
+              "contacts": 14
+            }
+          ],
+          "frames": 150,
+          "totalSpikes": 115052,
+          "simulatedMs": 3000
+        }
+      ],
+      "validation": {
+        "requested": 106,
+        "performed": 105,
+        "matched": 67,
+        "wrong": 33,
+        "extra": 5,
+        "missed": 39,
+        "onTime": 35,
+        "onsetAbsoluteErrorSum": 5421.428571428571,
+        "frames": 328,
+        "simulatedMs": 6560,
+        "totalSpikes": 269066,
+        "onsetMaeMs": 80.91684434968016,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 29,
+            "pitchCount": 30,
+            "gateTP": 13,
+            "gateFP": 36,
+            "gateFN": 3,
+            "gateTN": 276,
+            "contacts": 12
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 31,
+            "pitchCount": 31,
+            "gateTP": 12,
+            "gateFP": 22,
+            "gateFN": 3,
+            "gateTN": 291,
+            "contacts": 15
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 24,
+            "pitchCount": 29,
+            "gateTP": 8,
+            "gateFP": 28,
+            "gateFN": 7,
+            "gateTN": 285,
+            "contacts": 15
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 45,
+            "pitchCount": 61,
+            "gateTP": 10,
+            "gateFP": 22,
+            "gateFN": 20,
+            "gateTN": 276,
+            "contacts": 9
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 101,
+            "pitchCount": 129,
+            "gateTP": 23,
+            "gateFP": 74,
+            "gateFN": 19,
+            "gateTN": 212,
+            "contacts": 27
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 29,
+            "pitchCount": 36,
+            "gateTP": 11,
+            "gateFP": 71,
+            "gateFN": 7,
+            "gateTN": 239,
+            "contacts": 27
+          }
+        ],
+        "activePitchAccuracy": 0.819620253164557
+      },
+      "finalTrials": [
+        {
+          "seed": 12007,
+          "bpm": 86,
+          "order": [
+            4,
+            0,
+            7,
+            2,
+            8,
+            5,
+            1,
+            6,
+            3
+          ],
+          "requested": 53,
+          "performed": 51,
+          "matched": 34,
+          "wrong": 11,
+          "extra": 6,
+          "missed": 19,
+          "onTime": 17,
+          "onsetAbsoluteErrorSum": 2835.581395348838,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 18,
+              "pitchCount": 18,
+              "gateTP": 12,
+              "gateFP": 19,
+              "gateFN": 0,
+              "gateTN": 143,
+              "contacts": 7
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 18,
+              "pitchCount": 18,
+              "gateTP": 5,
+              "gateFP": 17,
+              "gateFN": 3,
+              "gateTN": 149,
+              "contacts": 8
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 12,
+              "pitchCount": 16,
+              "gateTP": 7,
+              "gateFP": 19,
+              "gateFN": 3,
+              "gateTN": 145,
+              "contacts": 10
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 30,
+              "pitchCount": 37,
+              "gateTP": 13,
+              "gateFP": 14,
+              "gateFN": 9,
+              "gateTN": 138,
+              "contacts": 5
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 63,
+              "pitchCount": 71,
+              "gateTP": 12,
+              "gateFP": 23,
+              "gateFN": 11,
+              "gateTN": 128,
+              "contacts": 10
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 21,
+              "pitchCount": 21,
+              "gateTP": 11,
+              "gateFP": 23,
+              "gateFN": 0,
+              "gateTN": 140,
+              "contacts": 11
+            }
+          ],
+          "frames": 174,
+          "totalSpikes": 145828,
+          "simulatedMs": 3480
+        },
+        {
+          "seed": 16001,
+          "bpm": 98,
+          "order": [
+            6,
+            2,
+            5,
+            8,
+            1,
+            4,
+            0,
+            3,
+            7
+          ],
+          "requested": 53,
+          "performed": 40,
+          "matched": 27,
+          "wrong": 13,
+          "extra": 0,
+          "missed": 26,
+          "onTime": 15,
+          "onsetAbsoluteErrorSum": 1777.142857142856,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 15,
+              "pitchCount": 16,
+              "gateTP": 7,
+              "gateFP": 20,
+              "gateFN": 2,
+              "gateTN": 124,
+              "contacts": 6
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 15,
+              "pitchCount": 15,
+              "gateTP": 9,
+              "gateFP": 8,
+              "gateFN": 0,
+              "gateTN": 136,
+              "contacts": 6
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 11,
+              "pitchCount": 14,
+              "gateTP": 3,
+              "gateFP": 8,
+              "gateFN": 4,
+              "gateTN": 138,
+              "contacts": 5
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 22,
+              "pitchCount": 32,
+              "gateTP": 8,
+              "gateFP": 13,
+              "gateFN": 11,
+              "gateTN": 121,
+              "contacts": 4
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 53,
+              "pitchCount": 64,
+              "gateTP": 10,
+              "gateFP": 27,
+              "gateFN": 15,
+              "gateTN": 101,
+              "contacts": 11
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 16,
+              "pitchCount": 19,
+              "gateTP": 11,
+              "gateFP": 36,
+              "gateFN": 0,
+              "gateTN": 106,
+              "contacts": 8
+            }
+          ],
+          "frames": 153,
+          "totalSpikes": 121082,
+          "simulatedMs": 3060
+        }
+      ],
+      "final": {
+        "requested": 106,
+        "performed": 91,
+        "matched": 61,
+        "wrong": 24,
+        "extra": 6,
+        "missed": 45,
+        "onTime": 32,
+        "onsetAbsoluteErrorSum": 4612.724252491695,
+        "frames": 327,
+        "simulatedMs": 6540,
+        "totalSpikes": 266910,
+        "onsetMaeMs": 75.6184303687163,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 33,
+            "pitchCount": 34,
+            "gateTP": 19,
+            "gateFP": 39,
+            "gateFN": 2,
+            "gateTN": 267,
+            "contacts": 13
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 33,
+            "pitchCount": 33,
+            "gateTP": 14,
+            "gateFP": 25,
+            "gateFN": 3,
+            "gateTN": 285,
+            "contacts": 14
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 23,
+            "pitchCount": 30,
+            "gateTP": 10,
+            "gateFP": 27,
+            "gateFN": 7,
+            "gateTN": 283,
+            "contacts": 15
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 52,
+            "pitchCount": 69,
+            "gateTP": 21,
+            "gateFP": 27,
+            "gateFN": 20,
+            "gateTN": 259,
+            "contacts": 9
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 116,
+            "pitchCount": 135,
+            "gateTP": 22,
+            "gateFP": 50,
+            "gateFN": 26,
+            "gateTN": 229,
+            "contacts": 21
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 37,
+            "pitchCount": 40,
+            "gateTP": 22,
+            "gateFP": 59,
+            "gateFN": 0,
+            "gateTN": 246,
+            "contacts": 19
+          }
+        ],
+        "activePitchAccuracy": 0.8621700879765396
+      }
+    },
+    "associated-dual": {
+      "trainingFrames": 638,
+      "retainedRateBytes": 326656,
+      "updatesPerHead": [
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624,
+        30624
+      ],
+      "validationTrials": [
+        {
+          "seed": 1901,
+          "bpm": 84,
+          "order": [
+            8,
+            7,
+            6,
+            5,
+            4,
+            3,
+            2,
+            1,
+            0
+          ],
+          "requested": 53,
+          "performed": 50,
+          "matched": 33,
+          "wrong": 12,
+          "extra": 5,
+          "missed": 20,
+          "onTime": 16,
+          "onsetAbsoluteErrorSum": 2977.142857142856,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 16,
+              "pitchCount": 18,
+              "gateTP": 8,
+              "gateFP": 19,
+              "gateFN": 2,
+              "gateTN": 149,
+              "contacts": 9
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 19,
+              "pitchCount": 19,
+              "gateTP": 5,
+              "gateFP": 16,
+              "gateFN": 4,
+              "gateTN": 153,
+              "contacts": 9
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 15,
+              "pitchCount": 17,
+              "gateTP": 7,
+              "gateFP": 12,
+              "gateFN": 2,
+              "gateTN": 157,
+              "contacts": 7
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 32,
+              "pitchCount": 38,
+              "gateTP": 5,
+              "gateFP": 14,
+              "gateFN": 14,
+              "gateTN": 145,
+              "contacts": 7
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 68,
+              "pitchCount": 74,
+              "gateTP": 15,
+              "gateFP": 32,
+              "gateFN": 11,
+              "gateTN": 120,
+              "contacts": 12
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 21,
+              "pitchCount": 22,
+              "gateTP": 6,
+              "gateFP": 14,
+              "gateFN": 5,
+              "gateTN": 153,
+              "contacts": 6
+            }
+          ],
+          "frames": 178,
+          "totalSpikes": 133828,
+          "simulatedMs": 3560
+        },
+        {
+          "seed": 2903,
+          "bpm": 100,
+          "order": [
+            5,
+            6,
+            7,
+            8,
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "requested": 53,
+          "performed": 41,
+          "matched": 31,
+          "wrong": 9,
+          "extra": 1,
+          "missed": 22,
+          "onTime": 12,
+          "onsetAbsoluteErrorSum": 3060,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 10,
+              "pitchCount": 12,
+              "gateTP": 4,
+              "gateFP": 11,
+              "gateFN": 2,
+              "gateTN": 133,
+              "contacts": 8
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 12,
+              "pitchCount": 12,
+              "gateTP": 4,
+              "gateFP": 12,
+              "gateFN": 2,
+              "gateTN": 132,
+              "contacts": 5
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 11,
+              "pitchCount": 12,
+              "gateTP": 4,
+              "gateFP": 13,
+              "gateFN": 2,
+              "gateTN": 131,
+              "contacts": 6
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 22,
+              "pitchCount": 23,
+              "gateTP": 4,
+              "gateFP": 22,
+              "gateFN": 7,
+              "gateTN": 117,
+              "contacts": 6
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 41,
+              "pitchCount": 55,
+              "gateTP": 9,
+              "gateFP": 22,
+              "gateFN": 7,
+              "gateTN": 112,
+              "contacts": 12
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 14,
+              "pitchCount": 14,
+              "gateTP": 4,
+              "gateFP": 11,
+              "gateFN": 3,
+              "gateTN": 132,
+              "contacts": 4
+            }
+          ],
+          "frames": 150,
+          "totalSpikes": 85795,
+          "simulatedMs": 3000
+        }
+      ],
+      "validation": {
+        "requested": 106,
+        "performed": 91,
+        "matched": 64,
+        "wrong": 21,
+        "extra": 6,
+        "missed": 42,
+        "onTime": 28,
+        "onsetAbsoluteErrorSum": 6037.142857142856,
+        "frames": 328,
+        "simulatedMs": 6560,
+        "totalSpikes": 219623,
+        "onsetMaeMs": 94.33035714285712,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 26,
+            "pitchCount": 30,
+            "gateTP": 12,
+            "gateFP": 30,
+            "gateFN": 4,
+            "gateTN": 282,
+            "contacts": 17
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 31,
+            "pitchCount": 31,
+            "gateTP": 9,
+            "gateFP": 28,
+            "gateFN": 6,
+            "gateTN": 285,
+            "contacts": 14
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 26,
+            "pitchCount": 29,
+            "gateTP": 11,
+            "gateFP": 25,
+            "gateFN": 4,
+            "gateTN": 288,
+            "contacts": 13
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 54,
+            "pitchCount": 61,
+            "gateTP": 9,
+            "gateFP": 36,
+            "gateFN": 21,
+            "gateTN": 262,
+            "contacts": 13
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 109,
+            "pitchCount": 129,
+            "gateTP": 24,
+            "gateFP": 54,
+            "gateFN": 18,
+            "gateTN": 232,
+            "contacts": 24
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 35,
+            "pitchCount": 36,
+            "gateTP": 10,
+            "gateFP": 25,
+            "gateFN": 8,
+            "gateTN": 285,
+            "contacts": 10
+          }
+        ],
+        "activePitchAccuracy": 0.8892405063291139
+      },
+      "finalTrials": [
+        {
+          "seed": 12007,
+          "bpm": 86,
+          "order": [
+            4,
+            0,
+            7,
+            2,
+            8,
+            5,
+            1,
+            6,
+            3
+          ],
+          "requested": 53,
+          "performed": 56,
+          "matched": 32,
+          "wrong": 21,
+          "extra": 3,
+          "missed": 21,
+          "onTime": 16,
+          "onsetAbsoluteErrorSum": 2382.558139534883,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 15,
+              "pitchCount": 18,
+              "gateTP": 3,
+              "gateFP": 11,
+              "gateFN": 9,
+              "gateTN": 151,
+              "contacts": 6
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 18,
+              "pitchCount": 18,
+              "gateTP": 7,
+              "gateFP": 4,
+              "gateFN": 1,
+              "gateTN": 162,
+              "contacts": 6
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 16,
+              "pitchCount": 16,
+              "gateTP": 3,
+              "gateFP": 21,
+              "gateFN": 7,
+              "gateTN": 143,
+              "contacts": 13
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 28,
+              "pitchCount": 37,
+              "gateTP": 10,
+              "gateFP": 25,
+              "gateFN": 12,
+              "gateTN": 127,
+              "contacts": 6
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 65,
+              "pitchCount": 71,
+              "gateTP": 13,
+              "gateFP": 47,
+              "gateFN": 10,
+              "gateTN": 104,
+              "contacts": 18
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 20,
+              "pitchCount": 21,
+              "gateTP": 5,
+              "gateFP": 14,
+              "gateFN": 6,
+              "gateTN": 149,
+              "contacts": 7
+            }
+          ],
+          "frames": 174,
+          "totalSpikes": 131317,
+          "simulatedMs": 3480
+        },
+        {
+          "seed": 16001,
+          "bpm": 98,
+          "order": [
+            6,
+            2,
+            5,
+            8,
+            1,
+            4,
+            0,
+            3,
+            7
+          ],
+          "requested": 53,
+          "performed": 45,
+          "matched": 31,
+          "wrong": 13,
+          "extra": 1,
+          "missed": 22,
+          "onTime": 22,
+          "onsetAbsoluteErrorSum": 2002.4489795918373,
+          "perLeg": [
+            {
+              "id": "L1",
+              "pitchCorrect": 14,
+              "pitchCount": 16,
+              "gateTP": 4,
+              "gateFP": 9,
+              "gateFN": 5,
+              "gateTN": 135,
+              "contacts": 5
+            },
+            {
+              "id": "L2",
+              "pitchCorrect": 15,
+              "pitchCount": 15,
+              "gateTP": 4,
+              "gateFP": 7,
+              "gateFN": 5,
+              "gateTN": 137,
+              "contacts": 4
+            },
+            {
+              "id": "L3",
+              "pitchCorrect": 12,
+              "pitchCount": 14,
+              "gateTP": 3,
+              "gateFP": 20,
+              "gateFN": 4,
+              "gateTN": 126,
+              "contacts": 9
+            },
+            {
+              "id": "R1",
+              "pitchCorrect": 23,
+              "pitchCount": 32,
+              "gateTP": 11,
+              "gateFP": 17,
+              "gateFN": 8,
+              "gateTN": 117,
+              "contacts": 6
+            },
+            {
+              "id": "R2",
+              "pitchCorrect": 57,
+              "pitchCount": 64,
+              "gateTP": 12,
+              "gateFP": 28,
+              "gateFN": 13,
+              "gateTN": 100,
+              "contacts": 15
+            },
+            {
+              "id": "R3",
+              "pitchCorrect": 18,
+              "pitchCount": 19,
+              "gateTP": 10,
+              "gateFP": 10,
+              "gateFN": 1,
+              "gateTN": 132,
+              "contacts": 6
+            }
+          ],
+          "frames": 153,
+          "totalSpikes": 102472,
+          "simulatedMs": 3060
+        }
+      ],
+      "final": {
+        "requested": 106,
+        "performed": 101,
+        "matched": 63,
+        "wrong": 34,
+        "extra": 4,
+        "missed": 43,
+        "onTime": 38,
+        "onsetAbsoluteErrorSum": 4385.007119126721,
+        "frames": 327,
+        "simulatedMs": 6540,
+        "totalSpikes": 233789,
+        "onsetMaeMs": 69.60328760518604,
+        "perLeg": [
+          {
+            "id": "L1",
+            "pitchCorrect": 29,
+            "pitchCount": 34,
+            "gateTP": 7,
+            "gateFP": 20,
+            "gateFN": 14,
+            "gateTN": 286,
+            "contacts": 11
+          },
+          {
+            "id": "L2",
+            "pitchCorrect": 33,
+            "pitchCount": 33,
+            "gateTP": 11,
+            "gateFP": 11,
+            "gateFN": 6,
+            "gateTN": 299,
+            "contacts": 10
+          },
+          {
+            "id": "L3",
+            "pitchCorrect": 28,
+            "pitchCount": 30,
+            "gateTP": 6,
+            "gateFP": 41,
+            "gateFN": 11,
+            "gateTN": 269,
+            "contacts": 22
+          },
+          {
+            "id": "R1",
+            "pitchCorrect": 51,
+            "pitchCount": 69,
+            "gateTP": 21,
+            "gateFP": 42,
+            "gateFN": 20,
+            "gateTN": 244,
+            "contacts": 12
+          },
+          {
+            "id": "R2",
+            "pitchCorrect": 122,
+            "pitchCount": 135,
+            "gateTP": 25,
+            "gateFP": 75,
+            "gateFN": 23,
+            "gateTN": 204,
+            "contacts": 33
+          },
+          {
+            "id": "R3",
+            "pitchCorrect": 38,
+            "pitchCount": 40,
+            "gateTP": 15,
+            "gateFP": 24,
+            "gateFN": 7,
+            "gateTN": 281,
+            "contacts": 13
+          }
+        ],
+        "activePitchAccuracy": 0.8826979472140762
+      }
+    }
+  },
+  "improved": false,
+  "preserved": {
+    "../../docs/media/flythoven-neural.mp4": "7f1186a0450af40ac8d0b1d491b0e7cff5987e48aca7b00b83c8cbff2fcba921",
+    "../../docs/media/flythoven-neural.png": "669e23ffdb2623004f2b030e7d380d53b8966645912bc2c2c2f9f18b9557a1b1",
+    "verification/neural-recording/report.json": "ac50da9ebfcb4a75fce020347a3bdccda7785545c818feb5b8fb6fc7fdacf725",
+    "verification/v2/report.json": "20d9057b6ed7e76b7cb61ac47104a72c84c2c3e4a2b9f05a1f3642c025166509",
+    "verification/v2-mapped/report.json": "1724a2c7a23f27a84457d454225911776c8f9f9698fe6179014d862e57a36396"
+  },
+  "elapsedMs": 158721.21425,
+  "limitations": "Small fixed test set, no biological-skill claim. LIF dynamics and task interfaces are engineered. 50 ms offline wall cadence approximates variable browser latency. Training proprioception was generated by untrained policies; learned policies shift that distribution. Pitch heads ignore rest labels; binary strike heads train both classes."
+}

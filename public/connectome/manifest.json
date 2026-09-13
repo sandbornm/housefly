@@ -1,0 +1,75 @@
+{
+  "dataset": "MaleCNS v1.0",
+  "source": "https://male-cns.janelia.org/download/",
+  "license": "CC-BY",
+  "nodeCount": 139662,
+  "edgeCount": 60000,
+  "classes": [
+    "ENS",
+    "ascending_neuron",
+    "cb_efferent",
+    "cb_endocrine",
+    "cb_intrinsic",
+    "cb_motor",
+    "descending_neuron",
+    "efferent_ascending",
+    "efferent_descending",
+    "ol_intrinsic",
+    "ol_sensory",
+    "visual_centrifugal",
+    "visual_projection",
+    "visual_projection_tbc",
+    "vnc_efferent",
+    "vnc_endocrine",
+    "vnc_intrinsic",
+    "vnc_motor",
+    "vnc_sensory",
+    "vnc_tbc"
+  ],
+  "coordinates": "Measured somaLocation in 8 nm voxels; centered and uniformly scaled; display axes x,-z,y.",
+  "selection": "Classified neurons with soma coordinates; strongest 60,000 connections with weight >= 5 and both endpoints retained. Lexical body-ID tie break.",
+  "activityModel": "Illustrative event-driven diffusion on the retained edges. No fitted neuron dynamics or learned game policy.",
+  "artifacts": {
+    "positions": {
+      "url": "/connectome/positions.f32.bin",
+      "bytes": 1675944,
+      "sha256": "11117d6a35cabbfbc9e4c553f6692f306cb1eeb97fddf685de75837e13e52303"
+    },
+    "ids": {
+      "url": "/connectome/ids.u32.bin",
+      "bytes": 558648,
+      "sha256": "994e780e0763ffbb380819194007427840b09f8180bbc3ce1702a637d82fff67"
+    },
+    "classes": {
+      "url": "/connectome/classes.u8.bin",
+      "bytes": 139662,
+      "sha256": "7c83fe7d4c72dac5b0e7e21cbe8a0313b4bf807ca83b23c3104e632d4002ec87"
+    },
+    "edges": {
+      "url": "/connectome/edges.u32.bin",
+      "bytes": 720000,
+      "sha256": "a8a8b0e9524bc3803de2e06a5b5fbc65dc4a3226b9667e83183f88726778aa07"
+    }
+  },
+  "inputManifest": {
+    "dataset": "MaleCNS v1.0",
+    "source": "https://male-cns.janelia.org/download/",
+    "files": {
+      "body-annotations-male-cns-v1.0-minconf-0.5.feather": {
+        "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather",
+        "bytes": 14483314,
+        "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2"
+      },
+      "body-neurotransmitters-male-cns-v1.0.feather": {
+        "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-neurotransmitters-male-cns-v1.0.feather",
+        "bytes": 43282834,
+        "sha256": "95c9289220663abeb3409f3ad9e5a7f8a53f8093f5139d15502cd08da8879621"
+      },
+      "connectome-weights-male-cns-v1.0-minconf-0.5.feather": {
+        "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/connectome-weights-male-cns-v1.0-minconf-0.5.feather",
+        "bytes": 1051241946,
+        "sha256": "e35da783d1c686b2b58b3b87cd6a403ae43bfcfba8bff28e08ef752c1a56afc1"
+      }
+    }
+  }
+}

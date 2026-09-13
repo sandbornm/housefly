@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "types": ["vite/client"], "noUnusedLocals": true },
+  "include": ["main.ts", "scene.ts", "audio.ts", "score.ts"],
+  "exclude": ["*.test.ts"]
+}

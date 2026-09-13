@@ -1,0 +1,63 @@
+{
+  "brian2Version": "2.10.1",
+  "dtMs": 0.2,
+  "durationMs": 100.0,
+  "maximumAbsoluteMvError": 1.5631940186722204e-13,
+  "spikeTimesEqual": true,
+  "spikeEvents": [
+    [
+      1,
+      0
+    ],
+    [
+      13,
+      0
+    ],
+    [
+      23,
+      1
+    ],
+    [
+      47,
+      3
+    ],
+    [
+      81,
+      0
+    ],
+    [
+      105,
+      1
+    ],
+    [
+      129,
+      3
+    ],
+    [
+      161,
+      0
+    ],
+    [
+      185,
+      1
+    ],
+    [
+      209,
+      3
+    ],
+    [
+      301,
+      0
+    ],
+    [
+      325,
+      1
+    ],
+    [
+      349,
+      3
+    ]
+  ],
+  "schedule": "Boundary stimuli and delayed synapses, exact integration, end threshold/reset. Brian start-stamped spikes are reported at t+dt; refractory deadline is t+dt+2.2ms.",
+  "scope": "Four-neuron signed structural fixture: voltage/current traces, excitation, inhibition, 1.8ms delayed propagation, 2.2ms refractory freeze and rejected impulses. Not whole-brain physiological validation."
+}

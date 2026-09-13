@@ -1,0 +1,36 @@
+{
+  "name": "housefly",
+  "description": "Drosophila hits the casino. Autonomous blackjack with real connectome anatomy and very questionable habits.",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc && vite build",
+    "test": "node --test tests/*.test.ts simulations/*/*.test.ts",
+    "test:ui": "playwright test",
+    "record:demo": "node scripts/record_demo.mjs",
+    "record:piano": "node scripts/record_piano.mjs",
+    "record:flyout": "node scripts/record_flyout.mjs",
+    "record:flypv": "node scripts/record_flypv.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "serve": "python3 backend/server.py",
+    "download:connectome": "python3 scripts/download_connectome.py --weights",
+    "download:annotations": "python3 scripts/download_connectome.py --annotations --neurotransmitters",
+    "seed:connectome": "python3 scripts/build_connectome_seed.py",
+    "scaffold:activity": "python3 scripts/scaffold_activity.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/three": "^0.186.0",
+    "typescript": "^5.6.3",
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.20.0",
+    "lucide": "^1.45.0",
+    "three": "^0.186.0",
+    "tone": "^15.1.22",
+    "vexflow": "5.0.0"
+  }
+}

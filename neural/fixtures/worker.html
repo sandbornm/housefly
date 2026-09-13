@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Neural Worker Verification</title></head>
+<body>
+<main>Neural worker verification fixture</main>
+<script type="module">
+import { AsyncNeuralRuntime, terminateNeuralWorker } from '../../src/neural/client.ts';
+window.neuralWorkerFixture = { AsyncNeuralRuntime, terminateNeuralWorker };
+</script>
+</body>
+</html>

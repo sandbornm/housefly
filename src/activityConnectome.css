@@ -1,0 +1,48 @@
+.activity-connectome {
+  position: absolute;
+  right: 24px;
+  bottom: 132px;
+  z-index: 3;
+  width: 300px;
+  max-width: calc(100% - 32px);
+  border: 1px solid #8aa6a34d;
+  border-radius: 6px;
+  overflow: hidden;
+  color: #f2f6f5;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.35;
+  pointer-events: none;
+  box-shadow: 0 8px 24px #1019181a;
+  contain: layout style;
+}
+.activity-connectome * { box-sizing: border-box; letter-spacing: 0; }
+.connectome-heading, .connectome-readout { background: #0b1418f5; padding: 11px 13px; }
+.connectome-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.connectome-heading strong { font-size: 11px; font-weight: 650; }
+.connectome-heading span { color: #99b1b5; font-size: 9px; white-space: nowrap; }
+.connectome-viewport { height: 164px; background: transparent; position: relative; }
+.connectome-loading { position: absolute; inset: 0; display: grid; place-content: center; color: #98b4b6; font-size: 11px; background: #0b1418; }
+.activity-connectome[data-ready="true"] .connectome-loading { display: none; }
+.connectome-readout { border-top: 1px solid #c4e9e51a; padding-top: 8px; }
+.connectome-action { display: block; color: #fff; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.connectome-detail { display: block; min-height: 14px; font-size: 10px; color: #a0b8b9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 2px 0 8px; }
+.connectome-channels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.connectome-channel { min-width: 0; color: #8aabae; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.connectome-track { margin-top: 4px; display: block; height: 3px; background: #ffffff14; overflow: hidden; }
+.connectome-level { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: var(--signal-color); transition: transform .1s linear; }
+.connectome-provenance { display: block; font-size: 9px; color: #789598; margin-top: 9px; }
+@media (max-width: 700px) {
+  .activity-connectome { width: 196px; right: 12px; bottom: 160px; }
+  .connectome-viewport { height: 110px; }
+  .connectome-heading, .connectome-readout { padding: 8px 10px; }
+  .connectome-heading strong { font-size: 10px; }
+  .connectome-heading span { font-size: 8px; }
+  .connectome-action { font-size: 11px; }
+  .connectome-detail, .connectome-channel, .connectome-provenance { font-size: 8px; }
+  .connectome-channels { gap: 5px; }
+  .connectome-provenance { margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .connectome-level { transition: none; } }

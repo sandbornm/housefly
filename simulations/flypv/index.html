@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#edf1ec" />
+    <title>Flylot | Alderwatch</title>
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="scene" aria-label="Fly pilot and quadcopter flying over Alderwatch village" tabindex="0"></canvas>
+      <header class="topbar">
+        <div class="identity"><span class="brand-icon"><i data-lucide="drone"></i></span><div><h1>Flylot<span class="brand-dot">.</span></h1><span class="callsign">PILOT 01 / DROSOPHILA</span></div></div>
+        <div class="compass" aria-label="Heading"><span id="heading-direction">N</span><div class="compass-ticks"></div><span id="heading">000</span><span class="compass-marker"></span></div>
+        <nav class="tools" aria-label="Flight tools">
+          <a id="all-demos" class="icon-button" href="/" aria-label="All demos" data-tip="All demos"><i data-lucide="arrow-left"></i></a>
+          <button id="sound" class="icon-button" aria-label="Enable rotor sound" aria-pressed="false" data-tip="Rotor sound"><i data-lucide="volume-x"></i></button>
+          <button id="reset" class="icon-button" aria-label="Reset flight" data-tip="Reset flight (R)"><i data-lucide="rotate-ccw"></i></button>
+          <button id="settings-toggle" class="icon-button" aria-label="Flight settings" aria-expanded="false" aria-controls="settings" data-tip="Flight settings"><i data-lucide="sliders-horizontal"></i></button>
+        </nav>
+      </header>
+      <section id="settings" class="settings" aria-label="Flight settings" hidden>
+        <div class="settings-title"><h2>Flight settings</h2><button id="settings-close" class="icon-button" aria-label="Close settings"><i data-lucide="x"></i></button></div>
+        <label for="speed">Flight speed <output id="speed-value">7 m/s</output></label><input id="speed" type="range" min="2" max="14" step="1" value="7" />
+        <label for="sensitivity">Sensitivity <output id="sensitivity-value">1.0</output></label><input id="sensitivity" type="range" min="0.5" max="2" step="0.1" value="1" />
+        <label class="toggle-label" for="map-visible">Village map <input id="map-visible" type="checkbox" checked /></label>
+        <div class="neural-settings">
+          <output id="neural-status">Loading full neural model</output>
+          <output id="calibration-metric">No substitute controller</output>
+          <output id="neural-clock">20 model ms per 100 world ms requested</output>
+          <div class="neural-actions"><button id="calibrate" disabled><i data-lucide="flask-conical"></i><span id="calibrate-label">Calibrate</span></button><label for="neural-silenced">Silence neurons <input id="neural-silenced" type="checkbox" /></label></div>
+        </div>
+      </section>
+      <div id="reticle" class="reticle" hidden aria-hidden="true"><span></span></div>
+      <div class="flight-status"><span id="status-dot"></span><span id="flight-status">NEURAL DRIVE OFF</span><span class="status-divider"></span><span id="flight-time">00:00</span></div>
+      <div id="touch-controls" class="touch-controls" hidden>
+        <div class="stick-wrap"><span>YAW / ALT</span><div id="look-stick" class="stick" role="group" aria-label="Touch yaw and altitude"><span class="stick-cross"></span><span class="stick-knob"></span></div></div>
+        <div class="stick-wrap"><span>MOVE</span><div id="move-stick" class="stick" role="group" aria-label="Touch forward and strafe"><span class="stick-cross"></span><span class="stick-knob"></span></div></div>
+      </div>
+      <footer class="bottom-bar">
+        <div class="place"><span class="eyebrow">THE GREEN MARCH</span><strong>Alderwatch</strong><span class="weather"><i data-lucide="sun"></i> Clear skies <span>18 C</span></span></div>
+        <div class="flight-console">
+          <div class="telemetry"><div><i data-lucide="move-vertical"></i><span><strong id="altitude">8.5</strong><small>m AGL</small></span></div><span class="telemetry-line"></span><div><i data-lucide="gauge"></i><span><strong id="velocity">0.0</strong><small>m/s</small></span></div><span class="telemetry-line"></span><button id="pause" class="icon-button" aria-label="Pause flight" aria-pressed="false" data-tip="Pause flight (P)"><i data-lucide="pause"></i></button></div>
+          <div class="flight-actions"><button id="autopilot" class="cruise-button" aria-pressed="true" data-tip="Toggle neural / manual control (G)"><i data-lucide="route"></i><span id="mode-label">Neural</span></button><div class="camera-modes" role="group" aria-label="Camera view"><button data-camera="chase" class="selected" aria-label="Follow camera" aria-pressed="true" data-tip="Follow camera"><i data-lucide="camera"></i><span>Follow</span></button><button data-camera="fpv" aria-label="First person camera" aria-pressed="false" data-tip="First person camera (V)"><i data-lucide="scan-eye"></i><span>FPV</span></button><button data-camera="orbit" aria-label="Orbit camera" aria-pressed="false" data-tip="Orbit camera"><i data-lucide="orbit"></i></button></div></div>
+        </div>
+        <div id="map-panel" class="map-panel"><canvas id="map" width="256" height="256" aria-label="Live village map"></canvas><div><span class="map-north">N</span><span>ALDERWATCH</span><i data-lucide="navigation"></i></div></div>
+      </footer>
+      <div id="notice" role="status" class="notice" hidden></div>
+      <div id="loading" class="loading" role="status"><i data-lucide="drone"></i><strong>Flylot</strong><span id="loading-message">Preparing Alderwatch...</span><button id="retry" hidden>Reload flight</button></div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

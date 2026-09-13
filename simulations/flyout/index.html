@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#143b30" />
+    <meta name="description" content="Flyout, a tiny ballpark with a very lively roster. An arcade fruit-fly baseball game." />
+    <title>Flyout / The Orchard League</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="field" aria-label="Three-dimensional baseball diamond with nine fruit-fly fielders and a batter"></canvas>
+      <header class="topbar">
+        <a class="wordmark" href="./" aria-label="Flyout home">FLYOUT<span>THE ORCHARD LEAGUE</span></a>
+        <section class="scoreboard" aria-label="Scoreboard">
+          <div class="score-team visitors"><span class="team-dot"></span><span class="team-name">CHERRY</span><b id="away-score">0</b></div>
+          <div class="inning"><span id="inning-half">TOP</span><b id="inning">1<span>/3</span></b></div>
+          <div class="score-team home"><b id="home-score">0</b><span class="team-name">MINT</span><span class="team-dot"></span></div>
+          <div class="score-details"><span>OUTS <span id="out-lights" class="out-lights"><i></i><i></i><i></i></span></span><span>COUNT <b id="count">0 - 0</b></span><span id="base-lights" class="base-lights" aria-label="Bases empty"><i></i><i></i><i></i></span></div>
+        </section>
+        <nav class="utility" aria-label="Game settings">
+          <button id="sound" class="icon-button" title="Enable sound" aria-label="Enable sound" aria-pressed="false"><i data-icon="volume-x"></i></button>
+          <button id="pause" class="icon-button" title="Pause game" aria-label="Pause game" aria-pressed="false"><i data-icon="pause"></i></button>
+          <button id="reset" class="icon-button" title="New game" aria-label="New game"><i data-icon="rotate-ccw"></i></button>
+        </nav>
+      </header>
+
+      <div class="park-name"><span class="live-dot"></span>ORCHARD PARK <span>DAY GAME / 24 C</span></div>
+      <div id="selected-tag" class="selected-tag" hidden><span></span><b></b></div>
+      <div id="activity-tag" class="flyout-activity-tag" hidden></div>
+
+      <aside class="roster" aria-label="Fielders">
+        <div class="section-label"><span id="defense-label">MINT / FIELDERS</span><i data-icon="users"></i></div>
+        <div id="roster-buttons" class="roster-grid"></div>
+        <div class="selected-detail"><b id="selected-name">Pip</b><span id="selected-position">Pitcher</span></div>
+        <label class="switch-label">Neural fielding<input id="auto-field" type="checkbox" checked disabled role="switch" /><span class="switch"></span></label>
+        <label class="switch-label">Silence neurons<input id="silence-neural" type="checkbox" disabled role="switch" /><span class="switch"></span></label>
+        <div id="neural-status" class="flyout-neural-status" role="status">Loading neural model</div>
+        <button id="follow" class="follow-button" aria-pressed="false" title="Follow selected fielder"><i data-icon="focus"></i><span>Follow fielder</span></button>
+      </aside>
+
+      <section class="play-status" aria-label="Current play">
+        <span id="phase-kicker">TOP 1 / CHERRY AT BAT</span>
+        <h1 id="call" aria-live="polite">Play ball.</h1>
+        <div id="play-detail">Pip on the mound</div>
+      </section>
+
+      <div class="autoplay-wrap"><label class="switch-label"><i data-icon="clapperboard"></i>Neural play<input id="autoplay" type="checkbox" disabled role="switch" /><span class="switch"></span></label></div>
+
+      <section class="controls" aria-label="Play controls">
+        <div class="batting-control">
+          <div class="control-heading"><span>MANUAL BAT</span><b id="batter-name">Ruby</b></div>
+          <div class="aim-control"><i data-icon="move-horizontal"></i><label for="aim">Spray</label><input id="aim" type="range" min="-100" max="100" value="0" aria-label="Hit direction" /><output id="aim-value">CF</output></div>
+          <div class="timing" id="timing" role="progressbar" aria-label="Pitch arrival" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="sweet-spot"></span><span id="timing-fill"></span><i id="timing-needle"></i></div>
+        </div>
+        <button id="action" class="primary-button" title="Manual pitch or swing (Space)"><i data-icon="circle-dot"></i><span>Pitch</span></button>
+        <div class="field-control">
+          <div class="control-heading"><span>FIELD</span><b id="possession">Ready</b></div>
+          <div class="field-actions"><button id="catch" class="icon-button" title="Reach for a catch (C)" aria-label="Reach for a catch"><i data-icon="hand"></i></button><div class="throw-buttons" aria-label="Throw to base"><button data-base="1" title="Throw to first base (1)" disabled>1B</button><button data-base="2" title="Throw to second base (2)" disabled>2B</button><button data-base="3" title="Throw to third base (3)" disabled>3B</button><button data-base="4" title="Throw home (4)" disabled><i data-icon="house"></i><span class="sr-only">Home</span></button></div></div>
+        </div>
+        <div class="dpad" aria-label="Move selected fielder"><button data-move="up" class="icon-button" title="Move up" aria-label="Move up"><i data-icon="arrow-up"></i></button><button data-move="left" class="icon-button" title="Move left" aria-label="Move left"><i data-icon="arrow-left"></i></button><span><i data-icon="move"></i></span><button data-move="right" class="icon-button" title="Move right" aria-label="Move right"><i data-icon="arrow-right"></i></button><button data-move="down" class="icon-button" title="Move down" aria-label="Move down"><i data-icon="arrow-down"></i></button></div>
+      </section>
+      <footer class="bottomline"><span>THREE-INNING EXHIBITION</span><a id="all-demos" hidden><i data-icon="arrow-left"></i>All demos</a><span>ARCADE SIMULATION</span></footer>
+
+      <div id="loading" class="loading-state"><span class="loading-ball"></span><b>Opening the ballpark</b><span id="loading-detail">Preparing the field</span><button id="retry" hidden>Reload</button></div>
+      <div id="pause-overlay" class="pause-overlay" hidden><b>Time out.</b><button id="resume" class="primary-button"><i data-icon="play"></i><span>Resume</span></button></div>
+      <dialog id="final-dialog"><span class="section-label">FINAL / ORCHARD PARK</span><h2 id="winner">Cherry wins</h2><div id="final-score"></div><table id="line-score" aria-label="Final inning scores"></table><button id="play-again" class="primary-button"><i data-icon="rotate-ccw"></i><span>Play again</span></button><button id="close-final" class="icon-button" title="Close final score" aria-label="Close final score"><i data-icon="x"></i></button></dialog>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

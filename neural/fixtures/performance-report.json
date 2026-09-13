@@ -1,0 +1,53 @@
+{
+  "modelId": "male-cns-v1-lif-dt02-w5-v1",
+  "environment": {
+    "node": "v24.17.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "singleNetwork20Ms": [
+    {
+      "inputHz": 0,
+      "samples": 50,
+      "simulatedChunkMs": 20,
+      "first100SimulatedMsWallMs": 8.565458000000035,
+      "meanMs": 1.3320050200000013,
+      "p50Ms": 1.2812080000000208,
+      "p95Ms": 1.4781250000000057,
+      "maximumMs": 4.832374999999985
+    },
+    {
+      "inputHz": 50,
+      "samples": 50,
+      "simulatedChunkMs": 20,
+      "first100SimulatedMsWallMs": 142.04483400000004,
+      "meanMs": 41.55421596,
+      "p50Ms": 43.28333399999997,
+      "p95Ms": 44.43054199999983,
+      "maximumMs": 44.97541699999988
+    },
+    {
+      "inputHz": 150,
+      "samples": 50,
+      "simulatedChunkMs": 20,
+      "first100SimulatedMsWallMs": 172.4712910000003,
+      "meanMs": 43.92899254000008,
+      "p50Ms": 44.927374999999756,
+      "p95Ms": 46.2002080000002,
+      "maximumMs": 46.84304200000042
+    }
+  ],
+  "tenNetworks20MsEach": {
+    "meanMs": 345.8913668000003,
+    "p50Ms": 400.0842499999999,
+    "p95Ms": 431.3645000000006,
+    "maximumMs": 431.3645000000006
+  },
+  "memory": {
+    "graphWasmBytes": 46530560,
+    "graphPlusTenRestingNetworksWasmBytes": 100925440,
+    "graphPlusTenActiveNetworksWasmBytes": 107282432,
+    "tenNetworksMinimumJsMeasurementBytes": 8384840,
+    "note": "WASM memory pages include allocator slack and scratch. JS measurement buffers exclude variable spike buffers, manifest, loaded graph display indices, and temporary fetch/hash buffers."
+  }
+}

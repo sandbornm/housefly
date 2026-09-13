@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Housefly: Drosophila hits the casino. Autonomous blackjack, a cigarette, and 139,662 neurons on display." />
+  <title>Housefly | Drosophila hits the casino</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand"><p class="kicker">Drosophila hits the casino</p><h1>Housefly</h1></div>
+      <div class="run-controls">
+        <span id="autoplayStatus" class="live-status">Autonomous play</span>
+        <label class="speed-field"><span>Pace</span><select id="playSpeed" aria-label="Playback pace"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select></label>
+        <button id="soundButton" class="icon-button" type="button" aria-label="Enable sound effects" aria-pressed="false" title="Enable sound effects"><i data-lucide="volume-x"></i></button>
+        <button id="autoplayButton" class="primary" type="button"><i data-lucide="pause"></i><span>Pause fly</span></button>
+      </div>
+    </header>
+    <main class="workspace">
+      <section class="table-column">
+        <div class="view-heading"><div><p class="kicker">Blackjack / no hole card</p><span id="sessionScore">+0 units</span></div><span id="actionCue">Observing</span></div>
+        <div class="table-stage">
+          <canvas id="scene" role="img" aria-label="Animated 3D fruit fly with a cigarette at a blackjack table"></canvas>
+          <div id="roundResult" class="round-result" role="status" hidden><span id="resultEyebrow"></span><strong id="resultTitle"></strong><span id="resultReward"></span></div>
+        </div>
+        <div class="table-readout">
+          <div><span>Active hand</span><strong id="playerTotal">0</strong></div>
+          <div><span>Dealer</span><strong id="dealerTotal">0</strong></div>
+          <div><span>Cards left</span><strong id="shoeDepth">52 / 52</strong></div>
+        </div>
+        <div id="handsReadout" class="hands-readout"></div>
+        <div class="button-row">
+          <button id="dealButton" type="button"><i data-lucide="layers"></i><span>Deal</span></button>
+          <button id="hitButton" type="button"><i data-lucide="plus"></i><span>Hit</span></button>
+          <button id="standButton" type="button"><i data-lucide="hand"></i><span>Stand</span></button>
+          <button id="doubleButton" type="button"><i data-lucide="chevrons-up"></i><span>Double</span></button>
+          <button id="splitButton" type="button"><i data-lucide="split"></i><span>Split</span></button>
+          <button id="flyButton" type="button"><i data-lucide="play"></i><span>Fly decision</span></button>
+        </div>
+        <div class="settings-row">
+          <label class="field"><span>Activity</span><select id="activitySelect"></select></label>
+          <label class="field"><span>Shoe</span><select id="deckCount"><option value="1" selected>1 deck</option><option value="2">2 decks</option><option value="4">4 decks</option><option value="6">6 decks</option><option value="8">8 decks</option></select></label>
+          <label class="field"><span>Choice noise <output id="noiseValue">0.00</output></span><input id="noiseSlider" type="range" min="0" max="100" value="0" /></label>
+        </div>
+        <p id="settingsStatus" class="muted"></p>
+        <div class="brain-toolbar" id="controllerControls">
+          <label class="field"><span>Controller</span><select id="controllerMode" aria-label="Blackjack controller"><option value="neural" selected>Neural LIF</option><option value="odds">Odds baseline</option></select></label>
+          <label class="check-field"><input id="learnReadout" type="checkbox" checked />Learn readout</label>
+          <label class="check-field"><input id="silenceNeural" type="checkbox" />Silence neurons</label>
+          <button id="resetReadout" class="icon-button" title="Reset learned readout" aria-label="Reset learned readout"><i data-lucide="rotate-ccw"></i></button>
+        </div>
+        <p id="controllerStatus" class="muted" role="status">Loading neural model</p>
+        <p id="learningStatus" class="muted">Untrained readout / fixed recurrent weights</p>
+      </section>
+      <section class="brain-column">
+        <div class="view-heading"><div><p class="kicker">MaleCNS v1.0 / anatomical view</p><strong><span id="neuronCount">Loading</span> <span class="quiet">located neurons</span></strong></div><button id="resetBrain" class="icon-button" title="Reset brain camera" aria-label="Reset brain camera"><i data-lucide="rotate-ccw"></i></button></div>
+        <div class="brain-stage"><canvas id="brainCanvas" role="img" aria-label="Interactive 3D MaleCNS neuron point cloud with event-driven activity"></canvas><div id="brainLegend" class="brain-legend"><span>Activity</span><div></div><span>0</span><span>1</span></div></div>
+        <div class="brain-toolbar">
+          <select id="brainMode" aria-label="Brain color mode"><option value="activity">Activity</option><option value="classes">Cell class</option></select>
+          <label class="check-field"><input id="showEdges" type="checkbox" />Connections</label>
+          <span id="edgeCount" class="muted"></span>
+        </div>
+        <div class="neural-metrics"><div><span>State magnitude &gt; 0.15</span><strong id="activeNeurons">0</strong></div><div><span>Mean state magnitude</span><strong id="meanActivity">0.000</strong></div><div><span>Drive</span><strong id="drivePhase">Rest</strong></div></div>
+        <p id="brainStatus" class="muted">Loading measured anatomy</p>
+        <p id="selectedNeuron" class="muted">Measured somata / modeled LIF voltage</p>
+      </section>
+      <section class="decision-band">
+        <div class="decision-panel">
+          <p class="kicker"><span id="decisionLabel">Neural action probabilities</span> / <span id="backendStatus">Preparing</span></p>
+          <h2 id="recommendation">Observing</h2>
+          <div class="ev-grid">
+            <div data-action="Hit"><span>Hit EV</span><strong id="hitEv">--</strong></div>
+            <div data-action="Stand"><span>Stand EV</span><strong id="standEv">--</strong></div>
+            <div data-action="Double"><span>Double EV</span><strong id="doubleEv">--</strong></div>
+            <div data-action="Split"><span>Split EV</span><strong id="splitEv">--</strong></div>
+          </div>
+          <p id="oddsMethod" class="muted"></p>
+          <p id="statusLine" class="status-line" aria-live="polite"></p>
+          <p class="rules">3:2 naturals / S17 / double after split / max 2 hands / split aces get one card / dealer natural takes all stakes</p>
+        </div>
+        <div class="trace-panel">
+          <div class="trace-heading"><p class="kicker">Decision replay</p><div class="trace-controls"><select id="traceHistory" aria-label="Decision history"><option>No decisions yet</option></select><button id="replayButton" class="icon-button" title="Replay decision" aria-label="Replay decision"><i data-lucide="rotate-ccw"></i></button></div></div>
+          <ol id="brainTrace" class="brain-trace"><li>Waiting for the first observation.</li></ol>
+          <p id="decisionStats" class="muted"></p>
+          <div id="nextCards" class="next-cards"></div>
+        </div>
+      </section>
+    </main>
+    <footer><span id="activityBadge">Blackjack</span><span id="controllerProvenance">Connectome LIF / engineered sensory encoding and trainable readout / fixed recurrent weights</span><a href="https://male-cns.janelia.org/download/" target="_blank" rel="noreferrer">MaleCNS source &middot; CC-BY</a></footer>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

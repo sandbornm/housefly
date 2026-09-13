@@ -1,0 +1,21 @@
+{
+  "elapsedMs": 3316.699999809265,
+  "rendererHeartbeatCallbacks": 331,
+  "totalSpikes": 163418,
+  "spikeIndexSha256": "33d1620a327b5319f6515b4974b7a5d433bd12f4c9699457f3933c18c49a7dcc",
+  "metadataOnly": true,
+  "maximumActors": 12,
+  "queueLimitRejected": true,
+  "concurrentAdvanceRejected": true,
+  "ownedFrames": true,
+  "independentStates": true,
+  "pendingSilenceResetDisposeCancelled": true,
+  "silencedZero": true,
+  "terminationRejectedAllPending": true,
+  "terminalFailureNoRestart": true,
+  "browser": "153.0.8010.12",
+  "singleWorker": true,
+  "singleGraphFetch": true,
+  "baseUrlVerified": true,
+  "corruptAssetsFailClosed": true
+}

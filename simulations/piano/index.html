@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e6e9e8" />
+    <meta name="description" content="Flythoven: a six-legged neural piano experiment, with Beethoven's Fur Elise as the requested score." />
+    <title>Flythoven | F&#252;r Elise, opening excerpt</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main id="app">
+      <div id="stage">
+        <canvas id="scene" aria-label="A fly performing on a black grand piano" tabindex="0"></canvas>
+      </div>
+      <header class="masthead">
+        <div class="identity">
+          <a class="home-link" href="/" aria-label="Housefly home"><i data-lucide="arrow-up-left"></i><span>Housefly</span></a>
+          <h1>Flythoven<span class="title-dot">.</span></h1>
+        </div>
+        <div class="top-actions">
+          <label class="edition"><input id="calibrate" type="checkbox" checked />CALIBRATION</label>
+          <button id="sound-enable" class="sound-command" type="button"><i data-lucide="volume-2"></i><span>Enable sound</span></button>
+        </div>
+      </header>
+      <div class="scene-status" id="scene-status" role="status"><span class="status-light"></span><span id="status-text">Loading neural model</span><span id="performance-text"></span></div>
+      <div class="scene-tools">
+        <button id="camera-reset" class="icon-button light-button" type="button" aria-label="Reset camera" data-tooltip="Reset camera"><i data-lucide="scan"></i></button>
+      </div>
+      <div class="error-message" id="scene-error" hidden role="alert">
+        <p id="error-text"></p><button id="retry" type="button"><i data-lucide="rotate-ccw"></i>Retry</button>
+      </div>
+      <footer class="player">
+        <div class="piece-heading">
+          <div class="piece-name"><h2>F&#252;r Elise</h2><span class="composer">Beethoven <span>/ WoO 59</span></span><span class="excerpt-label">EXCERPT / SCORE TARGET</span></div>
+          <div class="time-display"><span id="elapsed">0:00</span><span class="time-slash">/</span><span id="duration">0:10</span></div>
+        </div>
+        <div id="notation" class="notation-scroll" role="region" aria-label="Fur Elise, treble and bass staves" tabindex="0"></div>
+        <div class="score-wrap">
+          <input id="seek" class="score-seek" type="range" min="0" max="12" step="0.05" value="0" aria-label="Score position" />
+        </div>
+        <div class="control-row">
+          <div class="transport-controls">
+            <button id="restart" class="icon-button" type="button" aria-label="Restart piece" data-tooltip="Restart"><i data-lucide="skip-back"></i></button>
+            <button id="play" class="icon-button play-button" type="button" aria-label="Pause performance" data-tooltip="Pause"><i data-lucide="pause"></i></button>
+            <button id="loop" class="icon-button loop-button" type="button" aria-label="Loop piece" aria-pressed="true" data-tooltip="Loop"><i data-lucide="repeat-2"></i></button>
+            <span id="bar-count" class="bar-count">00 <span>/ 8</span></span>
+          </div>
+          <label class="tempo-control" for="tempo"><i data-lucide="gauge"></i><input id="tempo" type="range" min="40" max="100" step="1" value="72" aria-label="Tempo" /><span><output id="tempo-value">72</output><span class="unit">BPM</span></span></label>
+          <div class="volume-control">
+            <button id="mute" class="icon-button" type="button" aria-label="Enable sound" aria-pressed="true" data-tooltip="Enable sound"><i data-lucide="volume-x"></i></button>
+            <input id="volume" type="range" min="0" max="100" step="1" value="65" aria-label="Volume" />
+          </div>
+        </div>
+      </footer>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

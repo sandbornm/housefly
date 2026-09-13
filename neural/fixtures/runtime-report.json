@@ -1,0 +1,28 @@
+{
+  "modelId": "male-cns-v1-lif-dt02-w5-v1",
+  "wasmSha256": "7d3643b4bce10ea7d5724c1756cebf706f2a7d8065670826a09d6522e2bfbfe2",
+  "nodeCount": 139662,
+  "edgeCount": 5536347,
+  "loadMs": 44.48295800000001,
+  "wasmOneSecondMs": 2162.208041,
+  "nativeOneSecondMs": 2836.758042,
+  "tenNetworks100MsEachWallMs": 1768.59325,
+  "totalSpikes": 163418,
+  "downstreamSpikes": 106037,
+  "nonzeroOutputPools": 128,
+  "seed": 42,
+  "inputHz": 150,
+  "durationMs": 1000,
+  "spikeIndexSha256": "33d1620a327b5319f6515b4974b7a5d433bd12f4c9699457f3933c18c49a7dcc",
+  "nativeWasmEqual": true,
+  "zeroInputQuiet": true,
+  "silencedQuiet": true,
+  "zeroEdgesDownstreamQuiet": true,
+  "chunkingEqual": true,
+  "corruptAssetRejected": true,
+  "environment": {
+    "node": "v24.17.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  }
+}
