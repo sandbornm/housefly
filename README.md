@@ -8,6 +8,21 @@ A home for experimental fly-brain activities: blackjack, piano, baseball and fli
 
 **Experimental neural control, not validated fly cognition.** The local neural mode runs a threshold-pruned MaleCNS LIF model with 139,662 neurons and 5,536,347 recurrent edges. An engineered, trainable readout selects actions from simulated firing rates. The explicit odds baseline still uses mathematical expected values and illustrative activity. The GIF above predates neural control.
 
+## Simulation Showcase
+
+Click a preview to open its neural-controller recording.
+
+| Housefly: Blackjack | Flythoven: Piano |
+| --- | --- |
+| [![Housefly blackjack with neural decisions](docs/media/housefly-neural.png)](docs/media/housefly-neural.mp4) | [![Flythoven at the piano with scrolling notation and simulated connectome activity](docs/media/flythoven-neural.png)](docs/media/flythoven-neural.mp4) |
+| Flyout: Baseball | Flylot: Flight |
+| [![Flyout fielders with individual neural controls and activity overlays](docs/media/flyout-neural.png)](docs/media/flyout-neural.mp4) | [![Flylot flying over a medieval village with a simulated connectome overlay](docs/media/flylot-neural.png)](docs/media/flylot-neural.mp4) |
+
+These are experimental captures, including missed notes and imperfect movement.
+The Flythoven clip is an older 96 BPM calibration recording, not the current
+72 BPM encoder or a polished performance. The overlays show modeled activity,
+not a measurement of a living fly's thoughts.
+
 ## Run
 
 Node.js 24+. No API keys or Python service needed to run the browser apps. The local checkout includes anatomical assets and about 46 MB of neural runtime/graph assets; neural mode loads those separately. See [neural reproduction](neural/README.md) for source data, assumptions, and rebuilding.
