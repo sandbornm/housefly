@@ -6,6 +6,28 @@ A home for experimental fly-brain activities: blackjack, piano, baseball and fli
 
 ![Housefly playing blackjack](docs/media/housefly-blackjack.gif)
 
+## Start here
+
+Node.js 24+. No API keys. Clone, install, run:
+
+```bash
+git clone https://github.com/sandbornm/housefly.git
+cd housefly
+npm ci
+npm run dev -- --port 5173
+```
+
+Open **http://127.0.0.1:5173**. Autoplay is on; click for sound. Pause for manual play.
+
+| Open | Activity |
+| --- | --- |
+| `/` | Housefly — blackjack |
+| `/simulations/piano/` | Flythoven — piano |
+| `/simulations/flyout/` | Flyout — baseball |
+| `/simulations/flypv/` | Flylot — flight |
+
+Neural mode loads about 46 MB of local connectome assets. If you are an agent, read [AGENTS.md](AGENTS.md) and [the neural-task scaffold](docs/neural-tasks.md).
+
 **Experimental neural control, not validated fly cognition.** The local neural mode runs a threshold-pruned MaleCNS LIF model with 139,662 neurons and 5,536,347 recurrent edges. An engineered, trainable readout selects actions from simulated firing rates. The explicit odds baseline still uses mathematical expected values and illustrative activity. The GIF above predates neural control.
 
 ## Simulation Showcase
@@ -73,6 +95,7 @@ Regenerate using `npm run record:piano`, `npm run record:flyout`, or `npm run re
 Each activity uses the shared browser runtime with its own state, action space,
 sensory encoding and actuator. Add new experiments without depending on a gallery,
 social API, deployment service or private credential.
+Start with [the reusable neural-task API and adapter scaffold](docs/neural-tasks.md).
 Flythoven's target is the opening theme of Beethoven's *Fur Elise*, using
 [Mutopia's public-domain edition](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931),
 with scrolling grand-staff notation. Neural mode's audio follows actual key
@@ -82,6 +105,8 @@ contacts, including wrong or late notes; it is not a guaranteed rendition.
 
 Data: [HHMI Janelia MaleCNS v1.0](https://male-cns.janelia.org/download/), CC-BY, with credit to the release's collaborators. [Google Research milestone](https://research.google/blog/a-connectomics-milestone-mapping-the-complete-male-fruit-fly-brain/).
 
-Created by [@msxndborn](https://x.com/msxndborn). GitHub: `sandbornm`.
+Body mesh: [NeuroMechFly v2](https://neuromechfly.org/) (Ramdya lab, EPFL), Apache-2.0, from a micro-CT scan of adult *Drosophila*. [Wang-Chen et al., Nature Methods 2024](https://doi.org/10.1038/s41592-024-02497-y). The Sketchfab “Fruit Fly Drosophila” listing is not downloadable.
+
+Created by [@msxndborn](https://x.com/msxndborn). Source: [github.com/sandbornm/housefly](https://github.com/sandbornm/housefly). Original code is MIT; connectome data is Janelia CC-BY; body mesh is NeuroMechFly Apache-2.0. See [LICENSE](LICENSE).
 
 **Post caption:** "Drosophila hits the casino. Six legs, a cigarette, and 139,662 simulated neurons. Experimental neural control, questionable table manners. Meet Housefly."
