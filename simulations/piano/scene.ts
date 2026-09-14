@@ -78,7 +78,7 @@ export class PianoScene {
     this.lighting();
     this.buildPiano();
     this.buildFly();
-    this.connectome = new ActivityConnectome(this.renderer, { mount: canvas.parentElement!, className: "piano-connectome" });
+    this.connectome = new ActivityConnectome(this.renderer, { mount: canvas.parentElement!, className: "piano-connectome", neural: true });
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas.parentElement!);
     this.resize(); this.resetCamera();

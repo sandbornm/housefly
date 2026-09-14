@@ -6,7 +6,7 @@ import { DEFAULT_BPM } from "./score.ts";
 
 const output = new URL("./verification/", import.meta.url);
 await mkdir(output, { recursive: true });
-const baseURL = process.env.PIANO_URL || "http://127.0.0.1:5173/simulations/piano/";
+const baseURL = process.env.PIANO_URL || "http://127.0.0.1:5180/simulations/piano/";
 const browser = await chromium.launch({ channel: "chromium", headless: true });
 const report = [], errors = [];
 const snapshot = page => page.evaluate(() => window.__flyPiano.snapshot());

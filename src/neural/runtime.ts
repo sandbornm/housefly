@@ -77,6 +77,10 @@ export class NeuralRuntime {
     this.wasm.neural_silence(this.requireLive(), Number(enabled));
   }
 
+  get silenced(): boolean {
+    return this.wasm.neural_stat(this.requireLive(), 3) !== 0;
+  }
+
   private readFrame(): NeuralFrame {
     const handle = this.requireLive();
     this.wasm.neural_snapshot(handle);

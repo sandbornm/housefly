@@ -1,4 +1,4 @@
-export type ActivityId = "blackjack" | "piano" | "flyout" | "flypv";
+export type ActivityId = "blackjack" | "piano" | "flyout" | "flypv" | "flysim";
 
 export interface ActivityDefinition {
   id: ActivityId;
@@ -23,7 +23,8 @@ export const activities: ActivityDefinition[] = [
   },
   { id: "piano", title: "Flythoven", href: `${base}simulations/piano/`, tableLabel: "FLYTHOVEN", decisionLabel: "Score / Notes / Tempo", sensoryTrace: [], motorTrace: [] },
   { id: "flyout", title: "Flyout", href: `${base}simulations/flyout/`, tableLabel: "FLYOUT", decisionLabel: "Pitch / Swing / Field / Throw", sensoryTrace: [], motorTrace: [] },
-  { id: "flypv", title: "Flylot", href: `${base}simulations/flypv/`, tableLabel: "FLYLOT", decisionLabel: "Throttle / Steer / Altitude", sensoryTrace: [], motorTrace: [] }
+  { id: "flypv", title: "Flylot", href: `${base}simulations/flypv/`, tableLabel: "FLYLOT", decisionLabel: "Throttle / Steer / Altitude", sensoryTrace: [], motorTrace: [] },
+  { id: "flysim", title: "Fly Simulator", href: `${base}simulations/flysim/`, tableLabel: "FLYSIM", decisionLabel: "Forward / Yaw / Climb / Dash", sensoryTrace: [], motorTrace: [] }
 ];
 
 export const activeActivity = activities[0];

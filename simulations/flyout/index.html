@@ -36,7 +36,7 @@
         <label class="switch-label">Neural fielding<input id="auto-field" type="checkbox" checked disabled role="switch" /><span class="switch"></span></label>
         <label class="switch-label">Silence neurons<input id="silence-neural" type="checkbox" disabled role="switch" /><span class="switch"></span></label>
         <div id="neural-status" class="flyout-neural-status" role="status">Loading neural model</div>
-        <button id="follow" class="follow-button" aria-pressed="false" title="Follow selected fielder"><i data-icon="focus"></i><span>Follow fielder</span></button>
+        <button id="follow" class="follow-button" aria-pressed="false" title="Fielder camera"><i data-icon="focus"></i><span>Fielder camera</span></button>
       </aside>
 
       <section class="play-status" aria-label="Current play">
@@ -45,12 +45,12 @@
         <div id="play-detail">Pip on the mound</div>
       </section>
 
-      <div class="autoplay-wrap"><label class="switch-label"><i data-icon="clapperboard"></i>Neural play<input id="autoplay" type="checkbox" disabled role="switch" /><span class="switch"></span></label></div>
+      <div class="autoplay-wrap"><label class="switch-label"><i data-icon="clapperboard"></i>Neural play<input id="autoplay" type="checkbox" checked disabled role="switch" /><span class="switch"></span></label></div>
 
       <section class="controls" aria-label="Play controls">
         <div class="batting-control">
           <div class="control-heading"><span>MANUAL BAT</span><b id="batter-name">Ruby</b></div>
-          <div class="aim-control"><i data-icon="move-horizontal"></i><label for="aim">Spray</label><input id="aim" type="range" min="-100" max="100" value="0" aria-label="Hit direction" /><output id="aim-value">CF</output></div>
+          <div class="aim-control"><i data-icon="move-horizontal"></i><label for="aim">Spray</label><input id="aim" type="range" min="-100" max="100" value="0" disabled aria-label="Hit direction" /><output id="aim-value">CF</output></div>
           <div class="timing" id="timing" role="progressbar" aria-label="Pitch arrival" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="sweet-spot"></span><span id="timing-fill"></span><i id="timing-needle"></i></div>
         </div>
         <button id="action" class="primary-button" title="Manual pitch or swing (Space)"><i data-icon="circle-dot"></i><span>Pitch</span></button>
@@ -60,7 +60,7 @@
         </div>
         <div class="dpad" aria-label="Move selected fielder"><button data-move="up" class="icon-button" title="Move up" aria-label="Move up"><i data-icon="arrow-up"></i></button><button data-move="left" class="icon-button" title="Move left" aria-label="Move left"><i data-icon="arrow-left"></i></button><span><i data-icon="move"></i></span><button data-move="right" class="icon-button" title="Move right" aria-label="Move right"><i data-icon="arrow-right"></i></button><button data-move="down" class="icon-button" title="Move down" aria-label="Move down"><i data-icon="arrow-down"></i></button></div>
       </section>
-      <footer class="bottomline"><span>THREE-INNING EXHIBITION</span><a id="all-demos" hidden><i data-icon="arrow-left"></i>All demos</a><span>ARCADE SIMULATION</span></footer>
+      <footer class="bottomline"><span>GAME ENGINE: PITCHES / TURNS / RULES</span><a id="all-demos" hidden><i data-icon="arrow-left"></i>All demos</a><span>NEURAL: SWING / FIELD / THROW</span></footer>
 
       <div id="loading" class="loading-state"><span class="loading-ball"></span><b>Opening the ballpark</b><span id="loading-detail">Preparing the field</span><button id="retry" hidden>Reload</button></div>
       <div id="pause-overlay" class="pause-overlay" hidden><b>Time out.</b><button id="resume" class="primary-button"><i data-icon="play"></i><span>Resume</span></button></div>

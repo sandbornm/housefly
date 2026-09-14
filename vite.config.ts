@@ -10,6 +10,7 @@ export default defineConfig({
         piano: "simulations/piano/index.html",
         flyout: "simulations/flyout/index.html",
         flypv: "simulations/flypv/index.html",
+        flysim: "simulations/flysim/index.html",
       },
     },
   },

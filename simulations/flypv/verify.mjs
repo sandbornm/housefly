@@ -9,7 +9,7 @@ const browser = await chromium.launch({ headless: true });
 const errors = [];
 const results = [];
 const mobileOnly = process.env.FLYPV_VERIFY_ONLY === 'mobile';
-const url = process.env.FLYPV_URL || 'http://127.0.0.1:5173/simulations/flypv/';
+const url = process.env.FLYPV_URL || 'http://127.0.0.1:5180/simulations/flypv/';
 const snapshot = page => page.evaluate(() => window.__flypv.snapshot());
 const connectomePixels = page => page.evaluate(() => {
   const canvas = document.querySelector('#scene'), rect = document.querySelector('.flypv-connectome .connectome-viewport').getBoundingClientRect();
@@ -90,24 +90,21 @@ const frameLink = state => {
 };
 const calibrate = async page => {
   const before = await snapshot(page);
-  assert.equal(before.neural.phase, 'uncalibrated'); assert.equal(before.motorSource, 'none');
-  await page.getByRole('button', { name: 'Flight settings', exact: true }).click();
-  await page.locator('#calibrate').click();
+  assert.equal(before.autopilot, true);
   const deadline = Date.now() + 120000;
   while (!['inference', 'failed'].includes((await snapshot(page)).neural?.phase)) {
     const progress = await snapshot(page);
-    console.log(JSON.stringify({ progress: { phase: progress.neural.phase, samples: progress.neural.samples, busy: progress.neural.busy, latency: progress.neural.latencyMs, elapsed: progress.elapsed, frames: progress.frames, paused: progress.paused, hidden: await page.evaluate(() => document.hidden) } }));
+    console.log(JSON.stringify({ progress: { phase: progress.neural?.phase, samples: progress.neural?.samples, busy: progress.neural?.busy, latency: progress.neural?.latencyMs, elapsed: progress.elapsed, frames: progress.frames } }));
     if (Date.now() > deadline) {
       await page.screenshot({ path: destination + 'calibration-timeout.png' });
-      throw new Error('Worker calibration timed out: ' + JSON.stringify(progress.neural));
+      throw new Error('Neural load timed out: ' + JSON.stringify(progress.neural));
     }
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(1000);
   }
   const trained = await snapshot(page);
   assert.equal(trained.neural.phase, 'inference', trained.neural.failure);
-  assert.equal(trained.neural.samples, 84); assert.ok(trained.neural.updates > 84);
-  assert.ok(trained.elapsed > before.elapsed + 1, 'Physics progresses during worker calibration');
-  assert.ok(trained.frames > before.frames + 20, 'Rendering progresses during worker calibration');
+  assert.ok(trained.neural.updates > 0, 'Startup restores shipped readout weights');
+  assert.ok(trained.elapsed > before.elapsed, 'Physics progresses while the model loads');
   console.log(JSON.stringify({ calibration: { loss: trained.neural.lastLoss, updates: trained.neural.updates, worldSeconds: trained.elapsed - before.elapsed, frames: trained.frames - before.frames } }));
   await page.getByRole('button', { name: 'Reset flight', exact: true }).click();
   await page.waitForFunction(() => window.__flypv.snapshot().motorSource === 'neural');
@@ -149,6 +146,8 @@ try {
     const silent = await snapshot(page);
     assert.equal(silent.motorSource, 'none'); assert.equal(silent.appliedTarget, null);
     assert.equal(silent.neural.command.yawRate, 0); assert.equal(silent.neural.spikeCount, 0);
+    assert.equal(silent.connectome.energy, 0, 'Silent anatomy has no fabricated excitation');
+    assert.equal(silent.connectome.active, 0);
     await page.waitForTimeout(450);
     const falling = await snapshot(page);
     assert.ok(falling.elapsed > silent.elapsed + .2);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { NeuralReadout } from '../../src/neural/policy.ts';
 import { calibrationObservation, teacherAction } from './calibration.ts';
-import { decodeFlight, encodeFlight, featureHash, FLIGHT_ACTIONS, FlightGoals, type FlightNeuralFrame, type FlightReadout } from './neural.ts';
+import { autopilotDrive, decodeFlight, encodeFlight, featureHash, FLIGHT_ACTIONS, FlightGoals, NEURAL_WINDOW_MS, type FlightNeuralFrame, type FlightReadout } from './neural.ts';
 import { NeuralPilot, type FlightRuntime } from './pilot.ts';
 import { ROUTE, SPAWN } from './flight.ts';
 
@@ -49,19 +49,49 @@ test('goal tracking retains missed waypoints and contact history without recover
   goals.update(SPAWN, true); assert.equal(goals.contacts, 2);
 });
 
+test('autopilot falls when inference has no powered readout and only holds during load or rehearsal', () => {
+  assert.equal(autopilotDrive('uncalibrated', false, false), 'hold');
+  assert.equal(autopilotDrive('calibration', false, false), 'hold');
+  assert.equal(autopilotDrive('inference', false, true), 'neural');
+  assert.equal(autopilotDrive('inference', false, false), 'fall');
+  assert.equal(autopilotDrive('inference', true, true), 'fall');
+  assert.equal(autopilotDrive('failed', false, true), 'fall');
+});
+
 test('calibration labels cover all actions and inference does not call the teacher', async () => {
   assert.deepEqual(Array.from({ length: 7 }, (_, i) => teacherAction(calibrationObservation(i))), [0, 1, 2, 3, 4, 5, 6]);
   let tick = 0, silenced = false;
-  const runtime: FlightRuntime = { advance() { return { ...frame(++tick), silenced }; }, reset() { tick = 0; }, silence(value) { silenced = value; }, snapshot() { return { ...frame(tick), silenced }; }, dispose() {} };
+  const windows: number[] = [];
+  const runtime: FlightRuntime = { advance(_input, milliseconds) { windows.push(milliseconds); return { ...frame(++tick), silenced }; }, reset() { tick = 0; }, silence(value) { silenced = value; }, snapshot() { return { ...frame(tick), silenced }; }, dispose() {} };
   const pilot = new NeuralPilot(runtime, { modelId: 'test-fixture', edgeCount: 0 });
   await pilot.infer(calibrationObservation(1), 7); pilot.commit(); assert.equal(pilot.command.powered, false);
   await pilot.beginCalibration(); pilot.commit();
   while (pilot.phase === 'calibration') { await pilot.calibrateStep(); pilot.commit(); }
   assert.equal(pilot.phase, 'inference'); assert.ok(pilot.readout.updates > 0);
+  assert.ok(windows.length > 0); assert.ok(windows.every(milliseconds => milliseconds === NEURAL_WINDOW_MS));
   const updates = pilot.readout.updates;
   await pilot.infer(calibrationObservation(2), 7); pilot.commit(); assert.equal(pilot.readout.updates, updates); assert.equal(pilot.command.frameTick, pilot.frame?.tick);
   await pilot.silence(true); pilot.commit(); assert.equal(pilot.command.target, null); assert.equal(pilot.frame?.silenced, true);
   await pilot.infer(calibrationObservation(1), 7); pilot.commit(); assert.equal(pilot.command.powered, false); assert.equal(pilot.readout.updates, updates);
+  await pilot.dispose();
+});
+
+test('restored readout weights skip live rehearsal and do not teach at inference', async () => {
+  let tick = 0;
+  const runtime: FlightRuntime = { advance() { return frame(++tick); }, reset() { tick = 0; }, silence() {}, snapshot() { return frame(tick); }, dispose() {} };
+  const trainer = new NeuralPilot(runtime, { modelId: 'test-fixture', edgeCount: 0 });
+  await trainer.beginCalibration(); trainer.commit();
+  while (trainer.phase === 'calibration') { await trainer.calibrateStep(); trainer.commit(); }
+  const weights = trainer.readout.export(); await trainer.dispose();
+  const pilot = new NeuralPilot(runtime, { modelId: 'test-fixture', edgeCount: 0 });
+  assert.equal(pilot.loadWeights({ ...weights, modelId: 'wrong' }), false);
+  assert.equal(pilot.phase, 'uncalibrated');
+  assert.equal(pilot.loadWeights(weights), true);
+  assert.equal(pilot.phase, 'inference');
+  const updates = pilot.readout.updates;
+  await pilot.infer(calibrationObservation(2), 7); pilot.commit();
+  assert.equal(pilot.readout.updates, updates);
+  assert.equal(pilot.command.powered, true);
   await pilot.dispose();
 });
 
@@ -82,6 +112,13 @@ test('worker replies stay staged until a physical step accepts the exact frame',
   pilot.commit();
   assert.equal(pilot.frame, actual); assert.equal(pilot.command.frameTick, actual.tick);
   assert.equal(pilot.command.featureHash, featureHash(actual.rates));
+  const audit = pilot.snapshot();
+  assert.equal(audit.decisionCount, 1);
+  assert.equal(audit.decisions[0].frameTick, actual.tick);
+  assert.equal(audit.decisions[0].featureHash, featureHash(Float32Array.from(audit.decisions[0].rates)));
+  assert.deepEqual(audit.decisions[0].rates, Array.from(actual.rates));
+  audit.decisions[0].rates[0] = 999;
+  assert.notEqual(pilot.snapshot().decisions[0].rates[0], 999);
   pilot.snapshot().command.input.forward = 99;
   assert.notEqual(pilot.command.input.forward, 99, 'Snapshot is not a mutable actuator reference');
   await pilot.dispose();
@@ -115,5 +152,6 @@ test('one advance is in flight and silencing invalidates late motor replies', as
   assert.equal(pilot.frame?.silenced, true); assert.equal(pilot.command.powered, false);
   assert.equal(pilot.command.yawRate, 0); assert.equal(pilot.command.target, null);
   assert.equal(pilot.completedRequests, 0, 'Invalidated neural response was never accepted');
+  assert.equal(pilot.snapshot().decisionCount, 0, 'Invalidated replies cannot enter the decision evidence');
   await pilot.dispose();
 });

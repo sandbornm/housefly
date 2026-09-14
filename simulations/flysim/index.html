@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#121a14" />
+    <meta name="description" content="Fly Simulator: a fruit fly escaping people, swatters, frogs, and a bird in a garden." />
+    <title>Fly Simulator</title>
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="scene" aria-label="Fruit fly escaping predators in a garden" tabindex="0"></canvas>
+      <header class="topbar">
+        <div class="identity">
+          <span class="brand-icon"><i data-lucide="bug"></i></span>
+          <div>
+            <h1>Fly Simulator</h1>
+            <span class="callsign">GARDEN ESCAPE / DROSOPHILA</span>
+          </div>
+        </div>
+        <div class="status-chip" role="status">
+          <span id="status-dot"></span>
+          <span id="flight-status">NEURAL DRIVE OFF</span>
+          <span class="status-divider"></span>
+          <span id="flight-time">00:00</span>
+        </div>
+        <nav class="tools" aria-label="Garden tools">
+          <a id="all-demos" class="icon-button" href="/" aria-label="All demos" data-tip="All demos"><i data-lucide="arrow-left"></i></a>
+          <button id="pause" class="icon-button" type="button" aria-label="Pause escape" aria-pressed="false" data-tip="Pause escape (P)"><i data-lucide="pause"></i></button>
+          <button id="reset" class="icon-button" type="button" aria-label="Reset garden" data-tip="Reset garden (R)"><i data-lucide="rotate-ccw"></i></button>
+        </nav>
+      </header>
+      <section class="hud" aria-label="Escape controls">
+        <div class="telemetry">
+          <div><i data-lucide="move-vertical"></i><span><strong id="altitude">1.4</strong><small>m AGL</small></span></div>
+          <span class="telemetry-line"></span>
+          <div><i data-lucide="gauge"></i><span><strong id="velocity">0.0</strong><small>m/s</small></span></div>
+          <span class="telemetry-line"></span>
+          <div><i data-lucide="scan-search"></i><span><strong id="threat-range">--</strong><small id="threat-kind">clear</small></span></div>
+        </div>
+        <div class="flight-actions">
+          <button id="autopilot" class="mode-button" type="button" aria-pressed="true" data-tip="Toggle neural / manual control (G)">
+            <i data-lucide="route"></i><span id="mode-label">Neural</span>
+          </button>
+          <div class="camera-modes" role="group" aria-label="Camera view">
+            <button type="button" data-camera="chase" class="selected" aria-label="Chase camera" aria-pressed="true" data-tip="Chase camera"><i data-lucide="camera"></i><span>Chase</span></button>
+            <button type="button" data-camera="orbit" aria-label="Orbit camera" aria-pressed="false" data-tip="Orbit camera"><i data-lucide="orbit"></i><span>Orbit</span></button>
+          </div>
+        </div>
+        <div class="neural-panel">
+          <output id="neural-status">Loading full neural model</output>
+          <output id="calibration-metric">No substitute controller</output>
+          <output id="neural-clock">20 model ms per 100 world ms requested</output>
+          <div class="neural-actions">
+            <button id="calibrate" type="button" disabled><i data-lucide="flask-conical"></i><span id="calibrate-label">Calibrate</span></button>
+            <label for="neural-silenced">Silence neurons <input id="neural-silenced" type="checkbox" /></label>
+          </div>
+        </div>
+      </section>
+      <footer class="provenance">MaleCNS LIF / engineered escape readout / not validated fly cognition</footer>
+      <div id="notice" role="status" class="notice" hidden></div>
+      <div id="loading" class="loading" role="status">
+        <i data-lucide="bug"></i>
+        <strong>Fly Simulator</strong>
+        <span id="loading-message">Preparing the garden...</span>
+        <button id="retry" type="button" hidden>Reload garden</button>
+      </div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

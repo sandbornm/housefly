@@ -1,7 +1,7 @@
 # Flylot
 
 A Three.js / Rapier flight experiment at
-**http://localhost:5173/simulations/flypv/**. Visible branding is Flylot; the
+**http://127.0.0.1:5180/simulations/flypv/**. Visible branding is Flylot; the
 internal route and `window.__flypv` debug API remain stable. All demos uses
 `import.meta.env.BASE_URL`, including the parent's `/demo/` deployment.
 
@@ -35,17 +35,22 @@ No legacy event projection, phase wave or synthetic activity fallback remains.
 
 ## Calibration and Timing
 
-Motor drive is off until the user chooses **Calibrate** in Flight settings.
-This explicit sensor rehearsal generates 84 balanced teacher-labeled observations.
-Each is processed by the real neural runtime for 60 model ms, with neural state
+Neural mode is the startup default. Browser startup restores shipped readout
+weights from `calibration.json`; motor drive stays off until that load finishes.
+**Calibrate** in Flight settings explicitly repeats the live rehearsal. It generates 84 balanced teacher-labeled observations.
+Each is processed by the real neural runtime for the same 20 model ms window used at inference, with neural state
 reset between trials. Only its measured rate features are captured. The readout
 then learns from 64 shuffled replay epochs. The reported loss is a training
 cross-entropy, not a held-out accuracy or evidence of biological fidelity.
+Startup rejects a `calibration.json` whose `neuralWindowMs` does not match inference.
 
-Rehearsal never sends commands to the physical drone. The neural state is reset
-before inference, while learned readout weights persist. Inference calls only
-the learned decoder, never the teacher. Recalibration is explicit, not hidden
-online correction. Reload starts uncalibrated again.
+Rehearsal never sends commands to the physical drone. During load and labeled
+rehearsal the aircraft holds a hover so gravity does not drop it; rotors keep
+an idle spin. Silencing and unpowered inference (zero pool rates) remove motors
+and let Rapier fall.
+The neural state is reset before inference, while learned readout weights persist.
+Inference calls only the learned decoder, never the teacher. Recalibration is
+explicit, not hidden online correction. Reload restores the shipped weights.
 
 Browser requests target **20 model ms per 100 physical ms**, with at most one
 advance in flight and no inference queue. Completed outputs are held until a
@@ -112,7 +117,8 @@ node simulations/flypv/verify.mjs
 Unit fixtures are explicitly test-only. They check input encoding, frame-bound
 decoding, zero/silenced gating, goal accounting, calibration separation,
 single-flight async scheduling, late-result invalidation, and physical collisions.
-`verify-neural.mjs` separately loads the real verified graph/WASM in Node,
+`node simulations/flypv/calibrate.mjs` writes `calibration.json` from the same
+labeled rehearsal. `verify-neural.mjs` separately loads the real verified graph/WASM in Node,
 calibrates on real model outputs, checks 100 inference decisions against their
 exact frame ticks and feature hashes, and removes motors while Rapier falls.
 Its ten-physical-second flight result is reported, not required to complete a
@@ -129,9 +135,11 @@ silencing/physics check, then records one continuous 30-second neural run at
 1920x1080, encoded as 30 fps H.264 with faststart. The fixed camera schedule is
 independent of outcomes. No resets, motor interventions or collision edits occur
 in the take; the poster is its predetermined 12-second frame. Outputs are
-`docs/media/flylot-neural.mp4` and `flylot-neural.png`; the old `flylot.mp4` is
-hash-checked and preserved. `verification/neural-recording.json` retains setup,
+`docs/media/flylot-neural-current.mp4` and `flylot-neural-current.png`; earlier media are
+preserved and the old `flylot.mp4` is hash-checked. `verification/neural-recording-current.json` retains setup,
 ablation, frame/command/physics telemetry, both clocks and observed limitations.
+Its bounded 512-decision log retains actual 128 rate features with matching
+hashes, frame ticks and actions; the recorder checks capture completeness.
 FFmpeg is limited to two threads. An HMR-free snapshot can be built and served
 using `vite build --config simulations/flypv/recording.config.mjs` and
 `vite preview --config simulations/flypv/recording.config.mjs`; set

@@ -81,6 +81,15 @@ export function featureHash(rates: Float32Array): number {
   return hash;
 }
 
+export type FlightPhase = 'uncalibrated' | 'calibration' | 'inference' | 'failed';
+
+/** Station-keep only while loading or rehearsing. Inference without a powered readout falls. */
+export function autopilotDrive(phase: FlightPhase | undefined, silenced: boolean, powered: boolean): 'neural' | 'hold' | 'fall' {
+  if (silenced || phase === 'failed' || (phase === 'inference' && !powered)) return 'fall';
+  if (powered) return 'neural';
+  return 'hold';
+}
+
 export function unpowered(action: 'unavailable' | 'silenced' | 'no-spikes' | 'calibration' = 'unavailable', frame?: FlightNeuralFrame): NeuralMotorDecision {
   return { powered: false, action, frameTick: frame?.tick ?? null, featureHash: frame ? featureHash(frame.rates) : 0,
     spikeCount: frame?.spikes.length ?? 0, input: { forward: 0, strafe: 0, lift: 0, yaw: 0 }, target: null, yawRate: 0, readout: null };

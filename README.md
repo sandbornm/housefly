@@ -1,14 +1,21 @@
 # Housefly
 
-**Drosophila hits the casino. Six legs. One cigarette. Absolutely no financial license.**
+A shared MaleCNS LIF runtime plus small activity adapters. Each scene maps its
+own observations to 32 sensory rates, steps the same frozen connectome graph,
+and reads actions from 128 pool rates. Blackjack is the landing page. Piano,
+baseball, flight, and a garden escape live under `/simulations/`.
 
-A home for experimental fly-brain activities: blackjack, piano, baseball and flight. Housefly starts at an autonomous blackjack table with an articulated 3D fly, moving chips, visible decisions and a live anatomical connectome view. Hit, stand, double, split, celebrate, repeat.
+Experimental neural control, not validated fly cognition. No API keys.
 
-![Housefly playing blackjack](docs/media/housefly-blackjack.gif)
+![MaleCNS LIF voltages and displayed wiring](docs/media/connectome-lif.png)
 
-## Start here
+The inspector shows 139,662 located neurons. Wiring in the panel is a 60,000-edge
+display subset; the controller integrates all 5,536,347 retained edges. Color is
+modeled membrane voltage (blue below rest, gold on a spike in this step).
 
-Node.js 24+. No API keys. Clone, install, run:
+## Start
+
+Node.js 24+. Clone, install, run:
 
 ```bash
 git clone https://github.com/sandbornm/housefly.git
@@ -17,66 +24,81 @@ npm ci
 npm run dev -- --port 5173
 ```
 
-Open **http://127.0.0.1:5173**. Autoplay is on; click for sound. Pause for manual play.
+Open **http://127.0.0.1:5173**. Neural mode loads about 46 MB of local assets.
 
-| Open | Activity |
+| Path | Activity |
 | --- | --- |
 | `/` | Housefly — blackjack |
 | `/simulations/piano/` | Flythoven — piano |
 | `/simulations/flyout/` | Flyout — baseball |
 | `/simulations/flypv/` | Flylot — flight |
+| `/simulations/flysim/` | Fly Simulator — garden escape |
 
-Neural mode loads about 46 MB of local connectome assets. If you are an agent, read [AGENTS.md](AGENTS.md) and [the neural-task scaffold](docs/neural-tasks.md).
+Agents: [AGENTS.md](AGENTS.md) and [adding a task](docs/neural-tasks.md).
 
-**Experimental neural control, not validated fly cognition.** The local neural mode runs a threshold-pruned MaleCNS LIF model with 139,662 neurons and 5,536,347 recurrent edges. An engineered, trainable readout selects actions from simulated firing rates. The explicit odds baseline still uses mathematical expected values and illustrative activity. The GIF above predates neural control.
+## How an adapter works
 
-## Simulation Showcase
+```text
+world observation
+        │
+        ▼
+  encode() → 32 rates, 0..150 Hz
+        │
+        ▼
+  WASM LIF  (fixed MaleCNS graph, 0.2 ms ticks)
+        │
+        ▼
+  frame: voltages, spikes, 128 pool rates
+        │
+        ├── overlay copies this frame (no invented spikes)
+        ▼
+  readout.decide(rates, legal mask) → action
+        │
+        ▼
+  environment applies the action
+        │
+        ▼
+  teach / reinforce on the readout only
+```
 
-Click a preview to open its neural-controller recording.
+The recurrent weights stay frozen. Task learning is a linear readout on the 128
+measured rates (`teach` for labeled rehearsal, `reinforce` for sampled executed
+actions). `encode()` must not include a teacher action. Silence, zero rates, or
+missing assets withhold motors; there is no scripted fallback.
 
-| Housefly: Blackjack | Flythoven: Piano |
+Blackjack uses the generic `NeuralTaskController` in `src/neural/task.ts`.
+Piano, Flyout, Flylot, and Fly Simulator reuse `integrateNeuralWindow` with
+task-specific heads. Scaffold a stub with:
+
+```bash
+npm run scaffold:activity -- --id odor-trail --title "Odor Trail"
+```
+
+Then register the page in `src/activityCatalog.ts` and `vite.config.ts`. The
+scaffold does not create a world.
+
+![Activity overlay copying the same LIF frame the motors used](docs/media/connectome-overlay.png)
+
+Overlays construct `ActivityConnectome` with `neural: true`. They stay dark
+until a real frame arrives, then `updateNeural` copies voltages and spike
+indices. Event-projection is not the control path.
+
+## Recordings
+
+Click a still to open the neural-controller take. Missed notes and early swings stay in.
+
+| Blackjack | Flythoven |
 | --- | --- |
-| [![Housefly blackjack with neural decisions](docs/media/housefly-neural.png)](docs/media/housefly-neural.mp4) | [![Flythoven at the piano with scrolling notation and simulated connectome activity](docs/media/flythoven-neural.png)](docs/media/flythoven-neural.mp4) |
-| Flyout: Baseball | Flylot: Flight |
-| [![Flyout fielders with individual neural controls and activity overlays](docs/media/flyout-neural.png)](docs/media/flyout-neural.mp4) | [![Flylot flying over a medieval village with a simulated connectome overlay](docs/media/flylot-neural.png)](docs/media/flylot-neural.mp4) |
+| [![Blackjack with LIF wiring](docs/media/housefly-neural-current.png)](docs/media/housefly-neural.mp4) | [![Flythoven](docs/media/flythoven-neural-current.png)](docs/media/flythoven-neural-current.mp4) |
+| Flyout | Flylot |
+| [![Flyout](docs/media/flyout-neural-current.png)](docs/media/flyout-neural-current.mp4) | [![Flylot](docs/media/flylot-neural-current.png)](docs/media/flylot-neural-current.mp4) |
 
-These are experimental captures, including missed notes and imperfect movement.
-The Flythoven clip is an older 96 BPM calibration recording, not the current
-72 BPM encoder or a polished performance. The overlays show modeled activity,
-not a measurement of a living fly's thoughts.
+Older files without `-neural` in the name used non-neural controllers.
 
-## Run
+Blackjack also ships an explicit odds baseline (exact finite-shoe Hit/Stand/Double
+EV; split estimates labeled). Neural mode samples the readout, not those EVs.
 
-Node.js 24+. No API keys or Python service needed to run the browser apps. The local checkout includes anatomical assets and about 46 MB of neural runtime/graph assets; neural mode loads those separately. See [neural reproduction](neural/README.md) for source data, assumptions, and rebuilding.
-
-```bash
-npm ci
-npm run dev -- --port 5173
-```
-
-Open **http://127.0.0.1:5173**. Autoplay is on; sound is opt-in. Pause for manual play and replay. Use `/?seed=5` for the recorded sequence, or `/?autoplay=0&seed=5` to start paused. Deck changes apply between hands.
-
-Remote workstation:
-
-```bash
-ssh -N -L 5173:127.0.0.1:5173 <user>@<host>
-```
-
-## Architecture
-
-- TypeScript + Three.js: table, procedural textures, gestures, chips, measured anatomy.
-- Neural Web Worker: Rust/WASM LIF integration; engineered sensory input and a trainable output policy. The recurrent graph is fixed, and simulated activity is not measured biological activity.
-- Explicit odds baseline: exact finite-shoe Hit/Stand/Double EV; split-round choices use 16,000 coupled rollouts per action. Estimates are labeled.
-- One shuffled deck by default, configurable to eight. S17, no hole card, 3:2 naturals, double after split, maximum two hands; dealer natural takes all stakes.
-- Python + Polars: optional data download/export tools, with source hashes and selections in [the manifest](public/connectome/manifest.json). These are structural connections, not trained policy weights.
-
-[Architecture, rules, state/action space, and data reproduction](docs/architecture.md) | [Neural-controller roadmap](docs/neural-roadmap.md)
-
-The activity selector also links to Flythoven, Flyout, and Flylot. Their experimental neural versions map score targets, game observations, or flight observations into the shared neural runtime and decode its outputs into actions. Interfaces and actuators are engineered, performance is limited, and no biological task competence is claimed. Older videos used separate score/game/flight controllers. A general prompt-to-environment engine remains future work.
-
-Neural overlays display actual modeled voltages and spikes. Baseline Input, Process, Motor, and Outcome channels remain illustrative display mappings, not identified task circuits. [Prior work and claim boundaries](docs/neural-control-priors.md) | [Overlay architecture](docs/activity-overlay.md) | [Blackjack odds-policy audit](docs/blackjack-policy-audit.md).
-
-## Verify And Record
+## Run and record
 
 ```bash
 npm test
@@ -85,28 +107,34 @@ npx playwright install chromium
 npm run test:ui -- tests/browser/table.spec.ts
 ```
 
-With the dev server running and `ffmpeg` installed, `npm run record:demo` records actual seeded autoplay through a win to `docs/media/`. The GIF and MP4 are silent; live sound effects are locally synthesized. No game outcomes are overridden for the recording.
+With the dev server up and `ffmpeg` installed:
 
-[Flythoven MP4 with synthesized piano audio](docs/media/flythoven.mp4) | [Flyout gameplay MP4, silent](docs/media/flyout.mp4) | [Flylot flight MP4, silent](docs/media/flylot.mp4).
-Regenerate using `npm run record:piano`, `npm run record:flyout`, or `npm run record:flypv`.
+```bash
+npm run record:demo
+npm run record:piano
+npm run record:flyout
+npm run record:flypv
+```
 
-## Activities
+`/?seed=5` is the recorded blackjack sequence. `/?autoplay=0&seed=5` starts paused.
 
-Each activity uses the shared browser runtime with its own state, action space,
-sensory encoding and actuator. Add new experiments without depending on a gallery,
-social API, deployment service or private credential.
-Start with [the reusable neural-task API and adapter scaffold](docs/neural-tasks.md).
-Flythoven's target is the opening theme of Beethoven's *Fur Elise*, using
-[Mutopia's public-domain edition](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931),
-with scrolling grand-staff notation. Neural mode's audio follows actual key
-contacts, including wrong or late notes; it is not a guaranteed rendition.
+## Layout
+
+- `src/neural/` graph loader, WASM worker, readout, task controller — no game, no credentials
+- `src/` blackjack table and the large connectome inspector
+- `simulations/{piano,flyout,flypv,flysim}/` activity worlds
+- `public/neural/` and `public/connectome/` runtime binaries (Janelia CC-BY)
+- `public/models/drosophila.glb` NeuroMechFly v2 body (Apache-2.0)
+
+[Architecture](docs/architecture.md) · [Task adapter contract](docs/neural-tasks.md) · [Claim boundaries](docs/neural-control-priors.md) · [Overlay](docs/activity-overlay.md)
 
 ## Credits
 
-Data: [HHMI Janelia MaleCNS v1.0](https://male-cns.janelia.org/download/), CC-BY, with credit to the release's collaborators. [Google Research milestone](https://research.google/blog/a-connectomics-milestone-mapping-the-complete-male-fruit-fly-brain/).
+Data: [HHMI Janelia MaleCNS v1.0](https://male-cns.janelia.org/download/), CC-BY.
+[Google Research milestone](https://research.google/blog/a-connectomics-milestone-mapping-the-complete-male-fruit-fly-brain/).
 
-Body mesh: [NeuroMechFly v2](https://neuromechfly.org/) (Ramdya lab, EPFL), Apache-2.0, from a micro-CT scan of adult *Drosophila*. [Wang-Chen et al., Nature Methods 2024](https://doi.org/10.1038/s41592-024-02497-y). The Sketchfab “Fruit Fly Drosophila” listing is not downloadable.
+Body mesh: [NeuroMechFly v2](https://neuromechfly.org/) (Ramdya lab, EPFL), Apache-2.0.
+[Wang-Chen et al., Nature Methods 2024](https://doi.org/10.1038/s41592-024-02497-y).
 
-Created by [@msxndborn](https://x.com/msxndborn). Source: [github.com/sandbornm/housefly](https://github.com/sandbornm/housefly). Original code is MIT; connectome data is Janelia CC-BY; body mesh is NeuroMechFly Apache-2.0. See [LICENSE](LICENSE).
-
-**Post caption:** "Drosophila hits the casino. Six legs, a cigarette, and 139,662 simulated neurons. Experimental neural control, questionable table manners. Meet Housefly."
+Created by [@msxndborn](https://x.com/msxndborn). Source: [github.com/sandbornm/housefly](https://github.com/sandbornm/housefly).
+Original code is MIT; connectome data is Janelia CC-BY; body mesh is NeuroMechFly Apache-2.0. See [LICENSE](LICENSE).

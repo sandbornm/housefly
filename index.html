@@ -54,11 +54,11 @@
         <p id="learningStatus" class="muted">Untrained readout / fixed recurrent weights</p>
       </section>
       <section class="brain-column">
-        <div class="view-heading"><div><p class="kicker">MaleCNS v1.0 / anatomical view</p><strong><span id="neuronCount">Loading</span> <span class="quiet">located neurons</span></strong></div><button id="resetBrain" class="icon-button" title="Reset brain camera" aria-label="Reset brain camera"><i data-lucide="rotate-ccw"></i></button></div>
-        <div class="brain-stage"><canvas id="brainCanvas" role="img" aria-label="Interactive 3D MaleCNS neuron point cloud with event-driven activity"></canvas><div id="brainLegend" class="brain-legend"><span>Activity</span><div></div><span>0</span><span>1</span></div></div>
+        <div class="view-heading"><div><p class="kicker">MaleCNS v1.0 / simulated LIF</p><strong><span id="neuronCount">Loading</span> <span class="quiet">located neurons</span></strong></div><button id="resetBrain" class="icon-button" title="Reset brain camera" aria-label="Reset brain camera"><i data-lucide="rotate-ccw"></i></button></div>
+        <div class="brain-stage"><canvas id="brainCanvas" role="img" aria-label="Interactive 3D MaleCNS anatomy showing simulated voltages and wiring"></canvas><div id="brainLegend" class="brain-legend"><span>Voltage</span><div></div><span>rest</span><span>spike</span></div></div>
         <div class="brain-toolbar">
-          <select id="brainMode" aria-label="Brain color mode"><option value="activity">Activity</option><option value="classes">Cell class</option></select>
-          <label class="check-field"><input id="showEdges" type="checkbox" />Connections</label>
+          <select id="brainMode" aria-label="Brain color mode"><option value="activity">Voltage</option><option value="classes">Cell class</option></select>
+          <label class="check-field"><input id="showEdges" type="checkbox" checked />Wiring</label>
           <span id="edgeCount" class="muted"></span>
         </div>
         <div class="neural-metrics"><div><span>State magnitude &gt; 0.15</span><strong id="activeNeurons">0</strong></div><div><span>Mean state magnitude</span><strong id="meanActivity">0.000</strong></div><div><span>Drive</span><strong id="drivePhase">Rest</strong></div></div>

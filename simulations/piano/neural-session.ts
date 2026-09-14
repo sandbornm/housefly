@@ -30,7 +30,7 @@ export class PianoNeuralSession {
   private busy = false;
   private playing = true;
   private silenced = false;
-  private calibrating = true;
+  private calibrating = false;
   private disposed = false;
   private accepted = 0;
   private decoder: PianoNeuralDecoder | PianoDualDecoder = new PianoNeuralDecoder(options => new NeuralReadout(options));

@@ -1,5 +1,7 @@
 import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { Action, Card, GameState } from "./activities/blackjack";
+import { createDrosophila, loadDrosophilaTemplate, type DrosophilaActor } from "./flyModel";
 
 interface AnimatedCard { mesh: THREE.Mesh; target: THREE.Vector3; from: THREE.Vector3; started: number; angle: number }
 interface ChipMove { from: THREE.Vector3; target: THREE.Vector3; delay: number; duration: number }
@@ -11,9 +13,10 @@ export class CasinoScene {
   private camera = new THREE.PerspectiveCamera(38, 1, 0.1, 50);
   private fly = new THREE.Group();
   private head = new THREE.Group();
-  private wings: THREE.Group[] = [];
+  private wings: THREE.Object3D[] = [];
+  private actor?: DrosophilaActor;
   private legs: { meshes: THREE.Mesh[]; side: number; row: number }[] = [];
-  private joints!: THREE.InstancedMesh;
+  private joints?: THREE.InstancedMesh;
   private cards = new Map<number, AnimatedCard>();
   private textures = new Map<string, THREE.CanvasTexture>();
   private signature = "";
@@ -61,15 +64,20 @@ export class CasinoScene {
     this.grain = this.grainTexture();
     this.chipMaterials = this.makeChipMaterials();
     this.halfChipMaterials = this.makeChipMaterials(true);
+    const generator = new THREE.PMREMGenerator(this.renderer);
+    const room = new RoomEnvironment();
+    this.scene.environment = generator.fromScene(room, 0.04).texture;
+    this.scene.environmentIntensity = 0.38;
+    room.dispose(); generator.dispose();
     this.table();
-    this.buildFly();
     this.fly.position.copy(this.flyBase);
-    this.fly.rotation.y = -0.35;
+    this.fly.rotation.y = -0.42;
     this.scene.add(this.fly);
     const smokeGeometry = new THREE.BufferGeometry();
     smokeGeometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(32*3), 3));
     this.smoke = new THREE.Line(smokeGeometry, new THREE.LineBasicMaterial({ color: 0xcbd2d4, transparent: true, opacity: 0.3, depthWrite: false }));
     this.head.add(this.smoke);
+    void loadDrosophilaTemplate().then(() => this.mountFly()).catch(() => this.buildFly());
     this.winLight.position.set(1.3, 1.8, 0.7); this.scene.add(this.winLight);
     this.confetti = new THREE.InstancedMesh(new THREE.BoxGeometry(0.018, 0.055, 0.006),
       new THREE.MeshStandardMaterial({ color: 0xeace89, metalness: 0.65, roughness: 0.3 }), 24);
@@ -122,6 +130,23 @@ export class CasinoScene {
     marking.rotation.x = -Math.PI/2; marking.position.set(-0.65,0.064,-0.06); this.scene.add(marking);
     const bettingRing = new THREE.Mesh(new THREE.RingGeometry(0.30,0.305,64),new THREE.MeshBasicMaterial({color:0xb1b08a,side:THREE.DoubleSide,transparent:true,opacity:0.65}));
     bettingRing.rotation.x = -Math.PI/2; bettingRing.scale.x = 1.55; bettingRing.position.set(0.64,0.066,1.32); this.scene.add(bettingRing);
+    const dealerBox = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.428, 64, 1, 0.2, Math.PI-0.4),
+      new THREE.MeshBasicMaterial({ color: 0xc5c4a4, side: THREE.DoubleSide, transparent: true, opacity: 0.55 }));
+    dealerBox.rotation.x = -Math.PI/2; dealerBox.scale.set(1.7, 1, 1); dealerBox.position.set(-0.55, 0.066, -0.92); this.scene.add(dealerBox);
+    const shoe = new THREE.Group();
+    const shoeBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.22, 0.9), new THREE.MeshStandardMaterial({ color: 0x1d2426, roughness: 0.48, metalness: 0.18 }));
+    shoeBody.position.set(2.05, 0.18, -1.05); shoeBody.rotation.y = -0.35; shoeBody.castShadow = true; shoe.add(shoeBody);
+    const shoeLip = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.18), brass);
+    shoeLip.position.set(1.86, 0.16, -0.72); shoeLip.rotation.y = -0.35; shoe.add(shoeLip);
+    this.scene.add(shoe);
+    const lamp = new THREE.Group();
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1.6, 10), brass);
+    arm.position.set(-0.2, 2.55, -0.1); lamp.add(arm);
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.38, 24, 1, true), new THREE.MeshPhysicalMaterial({ color: 0x6a2a2a, roughness: 0.55, side: THREE.DoubleSide, emissive: 0x3a1810, emissiveIntensity: 0.35 }));
+    shade.position.set(-0.2, 1.78, -0.1); lamp.add(shade);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffe6b8 }));
+    bulb.position.set(-0.2, 1.62, -0.1); lamp.add(bulb);
+    this.scene.add(lamp);
   }
 
   private grainTexture(): THREE.CanvasTexture {
@@ -158,6 +183,31 @@ export class CasinoScene {
     const edgeTexture=new THREE.CanvasTexture(side);edgeTexture.colorSpace=THREE.SRGBColorSpace;
     const cap=new THREE.MeshStandardMaterial({map:face,roughness:0.48,bumpMap:this.grain,bumpScale:0.001});
     return [new THREE.MeshStandardMaterial({map:edgeTexture,roughness:0.52}),cap,cap];
+  }
+
+  private mountFly(): void {
+    this.actor = createDrosophila(0x8c6844, 0.62);
+    const inner = this.actor.body;
+    inner.rotation.y = 2.45;
+    this.fly.add(this.actor.group);
+    const eyes = inner.getObjectByName("eyes");
+    if (eyes instanceof THREE.Mesh) {
+      const material = (eyes.material as THREE.MeshStandardMaterial).clone();
+      material.color.setHex(0xb42838);
+      material.emissive.setHex(0x4a0810);
+      material.emissiveIntensity = 0.18;
+      eyes.material = material;
+    }
+    const lWing = inner.getObjectByName("lWing");
+    const rWing = inner.getObjectByName("rWing");
+    if (lWing) this.wings.push(lWing);
+    if (rWing) this.wings.push(rWing);
+    this.head.position.set(0.28, 0.58, 0.32);
+    this.fly.add(this.head);
+    this.segment(this.head, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.16, 0.02, 0.12), 0.018, new THREE.MeshStandardMaterial({ color: 0xc18d4c }));
+    this.segment(this.head, new THREE.Vector3(0.16, 0.02, 0.12), new THREE.Vector3(0.38, 0.04, 0.22), 0.02, new THREE.MeshStandardMaterial({ color: 0xf2efdf }));
+    this.segment(this.head, new THREE.Vector3(0.38, 0.04, 0.22), new THREE.Vector3(0.42, 0.04, 0.24), 0.022, new THREE.MeshStandardMaterial({ color: 0x615652, roughness: 1 }));
+    this.segment(this.head, new THREE.Vector3(0.415, 0.04, 0.237), new THREE.Vector3(0.43, 0.042, 0.245), 0.016, new THREE.MeshStandardMaterial({ color: 0xf76e37, emissive: 0xe6421e, emissiveIntensity: 1.5 }));
   }
 
   private sphere(parent: THREE.Object3D, position: number[], scale: number[], material: THREE.Material): THREE.Mesh {
@@ -388,7 +438,7 @@ export class CasinoScene {
     const chipReach = this.chipPhase !== "lost" ? Math.sin(chipProgress*Math.PI) : 0;
     const progress = Math.min(1,(now-this.gestureStarted)/this.gestureDuration);
     const gesture = this.action && progress<1 ? Math.sin(progress*Math.PI) : 0;
-    if (progress >= 1) { this.action = null; this.canvas.dataset.gesture = "idle"; }
+    if (progress >= 1) this.action = null;
     const tap = Math.sin(progress*Math.PI*(this.action === "Double" ? 4 : 2))**2;
     this.fly.position.x = this.flyBase.x - chipReach*0.1;
     const hop = celebration > 0 ? celebration*Math.sin((now-this.celebrationStarted)/170)**2*0.12 : 0;
@@ -397,7 +447,17 @@ export class CasinoScene {
     this.fly.rotation.x = -chipReach*0.035-celebration*0.06;
     this.head.rotation.x = gesture*(this.action === "Stand" ? -0.1 : 0.16)-celebration*0.18;
     this.head.rotation.y = this.action === "Stand" ? Math.sin(progress*Math.PI*3)*gesture*0.22 : -chipReach*0.12;
-    this.wings.forEach((wing,i)=>{wing.rotation.z = (i===0?-1:1)*(0.045+Math.sin(now/120)*0.015+gesture*0.18+celebration*(0.48+Math.sin(now/32)*0.24));});
+    if (this.actor) {
+      const beat = 18 + gesture * 22 + celebration * 40;
+      const amp = 0.08 + gesture * 0.22 + celebration * 0.28;
+      this.wings.forEach((wing, i) => {
+        wing.rotation.x = 0.5;
+        wing.rotation.z = (i === 0 ? 1 : -1) * (0.06 + Math.sin(now / 1000 * beat) * amp);
+      });
+      this.actor.body.rotation.x = this.action === "Hit" || this.action === "Double" ? -gesture * 0.18 : this.action === "Stand" ? gesture * 0.12 : -chipReach * 0.08;
+    } else {
+      this.wings.forEach((wing,i)=>{wing.rotation.z = (i===0?-1:1)*(0.045+Math.sin(now/120)*0.015+gesture*0.18+celebration*(0.48+Math.sin(now/32)*0.24));});
+    }
     this.fly.updateMatrixWorld(true);
     const touch = this.wagerChips[0]?.mesh.position.clone().add(new THREE.Vector3(0.13,0.015,0));
     if (touch) this.fly.worldToLocal(touch);
@@ -422,12 +482,12 @@ export class CasinoScene {
         points[2].lerp(this.segmentDirection.copy(touch).add(new THREE.Vector3(0.12,0.14,-0.08)),chipReach);
       }
       meshes.forEach((mesh,i)=>this.placeSegment(mesh,points[i],points[i+1]));
-      for (let joint=0;joint<2;joint++) {
+      if (this.joints) for (let joint=0;joint<2;joint++) {
         this.jointMatrix.makeTranslation(points[joint+1].x,points[joint+1].y,points[joint+1].z);
         this.joints.setMatrixAt(index*2+joint,this.jointMatrix);
       }
     }
-    this.joints.instanceMatrix.needsUpdate = true;
+    if (this.joints) this.joints.instanceMatrix.needsUpdate = true;
     const smoke = this.smoke.geometry.getAttribute("position") as THREE.BufferAttribute;
     for (let i=0;i<32;i++) {const t=i/31; smoke.setXYZ(i,0.518+Math.sin(now/1200+t*7)*t*0.07,-0.078+t*0.82,0.453+Math.sin(now/900+t*5)*t*0.06);}
     smoke.needsUpdate=true;

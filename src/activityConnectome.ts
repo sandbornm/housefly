@@ -59,7 +59,7 @@ export class ActivityConnectome {
   private geometry?: THREE.BufferGeometry;
   private lineGeometry?: THREE.BufferGeometry;
   private signal = empty;
-  private mode: "event-projection" | "neural" = "event-projection";
+  private mode: "event-projection" | "neural-pending" | "neural" = "event-projection";
   private neuralTick = 0;
   private neuralMilliseconds = 0;
   private neuralSpikes = 0;
@@ -73,13 +73,18 @@ export class ActivityConnectome {
   private previousColor = new THREE.Color();
   private reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  constructor(private renderer: THREE.WebGLRenderer, options: { mount?: HTMLElement; className?: string; title?: string } = {}) {
+  constructor(private renderer: THREE.WebGLRenderer, options: { mount?: HTMLElement; className?: string; title?: string; neural?: boolean } = {}) {
     this.element = document.createElement("aside");
     this.element.className = `activity-connectome ${options.className ?? ""}`;
-    this.element.setAttribute("aria-label", "Connectome event activity, illustrative not biological simulation");
+    const neural = Boolean(options.neural);
+    if (neural) this.mode = "neural-pending";
+    this.element.setAttribute("aria-label", neural
+      ? "Simulated connectome waiting for the neural controller"
+      : "Connectome event activity, illustrative not biological simulation");
+    if (neural) this.element.dataset.mode = "neural-pending";
     const header = document.createElement("div"); header.className = "connectome-heading";
     const title = document.createElement("strong"); title.textContent = options.title ?? "CONNECTOME";
-    const tag = document.createElement("span"); tag.textContent = "EVENT PROJECTION";
+    const tag = document.createElement("span"); tag.textContent = neural ? "AWAITING LIF" : "EVENT PROJECTION";
     header.append(title, tag);
     this.viewport = document.createElement("div"); this.viewport.className = "connectome-viewport";
     const loading = document.createElement("span"); loading.className = "connectome-loading"; loading.textContent = "Loading anatomy"; this.viewport.append(loading);
@@ -87,14 +92,17 @@ export class ActivityConnectome {
     this.action = document.createElement("strong"); this.action.className = "connectome-action";
     this.detail = document.createElement("span"); this.detail.className = "connectome-detail";
     const channels = document.createElement("div"); channels.className = "connectome-channels";
-    for (const [index, name] of ["Input", "Process", "Motor", "Outcome"].entries()) {
+    for (const [index, name] of (neural ? ["Visual", "Central", "Motor", "Other"] : ["Input", "Process", "Motor", "Outcome"]).entries()) {
       const column = document.createElement("div"); column.className = "connectome-channel"; column.textContent = name;
       const track = document.createElement("span"); track.className = "connectome-track";
       const bar = document.createElement("span"); bar.className = "connectome-level"; bar.style.setProperty("--signal-color", COLORS[index]);
       track.append(bar); column.append(track); channels.append(column); this.bars.push(bar);
     }
-    const provenance = document.createElement("span"); provenance.className = "connectome-provenance"; provenance.textContent = "MaleCNS v1.0 / illustrative activity";
-    provenance.title = "Measured neuron positions and 60,000 anatomical edges. Synthetic event-driven diffusion, not measured neural excitation or the controller of this activity.";
+    const provenance = document.createElement("span"); provenance.className = "connectome-provenance";
+    provenance.textContent = neural ? "Waiting for measured voltages and spikes" : "MaleCNS v1.0 / illustrative activity";
+    provenance.title = neural
+      ? "The overlay stays dark until the task controller supplies a real LIF frame. No event-projected or invented excitation."
+      : "Measured neuron positions and 60,000 anatomical edges. Synthetic event-driven diffusion, not measured neural excitation or the controller of this activity.";
     readout.append(this.action, this.detail, channels, provenance);
     this.element.append(header, this.viewport, readout);
     (options.mount ?? renderer.domElement.parentElement!).append(this.element);
@@ -192,7 +200,7 @@ export class ActivityConnectome {
 
   update(now: number, signal: ActivitySignal): void {
     if (this.disposed) return;
-    if (this.mode === "neural") throw new Error("Event projection cannot replace simulated neural activity");
+    if (this.mode !== "event-projection") throw new Error("Event projection cannot replace simulated neural activity");
     this.signal = signal;
     if (!this.lastStep) this.lastStep = now;
     if (now - this.lastStep >= 50) {

@@ -8,7 +8,7 @@ import { createVillage } from './world.ts';
 import { ActivityConnectome } from '../../src/activityConnectome';
 import { AsyncNeuralRuntime } from '../../src/neural/client.ts';
 import { NeuralPilot } from './pilot.ts';
-import { CONTROL_INTERVAL, FlightGoals, unpowered } from './neural.ts';
+import { CONTROL_INTERVAL, FlightGoals, NEURAL_WINDOW_MS, autopilotDrive, unpowered } from './neural.ts';
 import './style.css';
 
 type CameraMode = 'chase' | 'fpv' | 'orbit';
@@ -77,7 +77,7 @@ async function start(): Promise<void> {
   const drone = createDrone(); scene.add(drone.group);
   const physics = new FlightPhysics(village.colliders);
   const goals = new FlightGoals(ROUTE);
-  const connectome = new ActivityConnectome(renderer, { mount: $('app'), className: 'flypv-connectome', title: 'PILOT CONNECTOME' });
+  const connectome = new ActivityConnectome(renderer, { mount: $('app'), className: 'flypv-connectome', title: 'PILOT CONNECTOME', neural: true });
   connectome.element.hidden = true;
   let pilot: NeuralPilot | undefined, modelError = '', modelLoading = false, requestedSilence = false;
   let controlElapsed = CONTROL_INTERVAL, measuredTurnRate = 0;
@@ -100,7 +100,20 @@ async function start(): Promise<void> {
       if (connectome.element.dataset.ready !== 'true') throw new Error('Measured anatomy is unavailable');
       if (!disposed) {
         pilot = new NeuralPilot(client, { modelId: client.graph.modelId, edgeCount: client.graph.edgeCount });
-        void pilot.silence(requestedSilence);
+        await pilot.silence(requestedSilence);
+        if (!disposed && !requestedSilence) {
+          try {
+            const response = await fetch(new URL('./calibration.json', import.meta.url));
+            if (!response.ok) throw new Error(`Flylot calibration HTTP ${response.status}`);
+            const artifact = await response.json() as { schema: number; encoder: string; modelId: string; nodeCount: number; edgeCount: number; neuralWindowMs?: number; weights: unknown };
+            if (artifact.schema !== 1 || artifact.encoder !== 'flylot-sensory32-readout128-v1'
+              || artifact.modelId !== client.graph.modelId || artifact.nodeCount !== client.graph.nodeCount
+              || artifact.edgeCount !== client.graph.edgeCount || artifact.neuralWindowMs !== NEURAL_WINDOW_MS
+              || !pilot.loadWeights(artifact.weights)) {
+              throw new Error('Flylot calibration metadata is incompatible.');
+            }
+          } catch { if (!disposed && !requestedSilence) await pilot.beginCalibration(); }
+        }
       } else void client.dispose().catch(() => {});
     } catch (error) { if (client && !pilot) void client.dispose().catch(() => {}); modelError = error instanceof Error ? error.message : String(error); }
     finally { if (!disposed) { modelLoading = false; $<HTMLButtonElement>('calibrate').disabled = false; lastHud = -1; } }
@@ -219,10 +232,18 @@ async function start(): Promise<void> {
     appliedFrameTick = null; appliedFeatureHash = 0;
     if (autopilot) {
       const command = pilot?.command ?? unpowered();
-      yaw = wrapAngle(yaw + command.yawRate * sensitivity * FIXED_DT);
-      target = command.powered ? manualVelocity(command.input, yaw, speed) : null;
-      motorSource = command.powered ? 'neural' : 'none';
       appliedFrameTick = command.frameTick; appliedFeatureHash = command.featureHash;
+      const drive = autopilotDrive(pilot?.phase, Boolean(pilot?.silenced), command.powered);
+      if (drive === 'fall') {
+        target = null; motorSource = 'none';
+      } else if (drive === 'neural') {
+        yaw = wrapAngle(yaw + command.yawRate * sensitivity * FIXED_DT);
+        target = manualVelocity(command.input, yaw, speed);
+        motorSource = 'neural';
+      } else {
+        // Loading and labeled rehearsal keep station. Silence and unpowered inference fall.
+        target = { x: 0, y: 0, z: 0 }; motorSource = 'none';
+      }
     } else {
       yaw = wrapAngle(yaw + input.yaw * 1.55 * sensitivity * FIXED_DT); target = manualVelocity(input, yaw, speed);
       motorSource = 'manual';
@@ -315,11 +336,14 @@ async function start(): Promise<void> {
       drone.group.rotation.x = THREE.MathUtils.lerp(drone.group.rotation.x, -forwardSpeed * .016, 1 - Math.exp(-6 * visualDt));
       drone.group.rotation.z = THREE.MathUtils.lerp(drone.group.rotation.z, -sideSpeed * .022, 1 - Math.exp(-6 * visualDt));
       if (!paused && !hidden) {
-        if (motorSource !== 'none') {
-          rotorPhase += visualDt * (75 + Math.hypot(velocity.x, velocity.z) * 3);
-          drone.rotors.forEach((rotor, i) => { rotor.rotation.y = rotorPhase * (i % 2 ? -1 : 1); });
-          drone.wings.forEach((wing, i) => { wing.rotation.z = Math.sin(elapsed * 14) * .025 * (i ? -1 : 1); });
-        }
+        const powered = motorSource !== 'none';
+        const rehearsing = pilot?.phase === 'calibration' || !pilot || pilot.phase === 'uncalibrated';
+        rotorPhase += visualDt * (powered ? 75 + Math.hypot(velocity.x, velocity.z) * 3 : rehearsing ? 48 : 0);
+        drone.rotors.forEach((rotor, i) => { rotor.rotation.y = rotorPhase * (i % 2 ? -1 : 1); });
+        const flap = powered ? .1 : rehearsing ? .055 : .02;
+        drone.wings.forEach((wing, i) => { wing.rotation.z = Math.sin(elapsed * (powered ? 28 : 16)) * flap * (i ? -1 : 1); });
+        drone.pilot.rotation.x = THREE.MathUtils.lerp(drone.pilot.rotation.x, drone.group.rotation.x * .45, 1 - Math.exp(-8 * visualDt));
+        drone.pilot.rotation.z = THREE.MathUtils.lerp(drone.pilot.rotation.z, drone.group.rotation.z * .55, 1 - Math.exp(-8 * visualDt));
         for (const flag of village.flags) {
           const positions = flag.geometry.getAttribute('position');
           for (let i = 0; i < positions.count; i++) { const x = positions.getX(i); positions.setZ(i, Math.sin(x * 3 - elapsed * 4) * .18 * (x + 1.4) / 2.8); }

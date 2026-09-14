@@ -1,5 +1,5 @@
 import { NeuralReadout } from '../../src/neural/policy.ts';
-import { AIM_ACTIONS, BATTER_ACTOR, FIELD_ACTIONS, MOVE_ACTIONS, SWING_ACTIONS, encodeObservation,
+import { AIM_ACTIONS, BATTER_ACTOR, FIELD_ACTIONS, MOVE_ACTIONS, NEURAL_WINDOW_MS, SWING_ACTIONS, encodeObservation,
   type ActorReadouts, type NeuralFrame, type Observation, type RuntimePort } from './neural-adapter.ts';
 
 export type Head = 'movement' | 'handling' | 'swing' | 'aim';
@@ -72,10 +72,11 @@ export async function calibrate(createRuntime: (seed: number) => RuntimePort, se
   const models = policies(seed), random = randomSequence(seed);
   const metric = (): CalibrationMetric => ({ samples: 0, correct: 0, loss: 0, accuracy: 0, updates: 0 });
   const report: CalibrationReport = { source: 'offline scripted observations / real neural responses',
-    trainingTrials: 192, validationTrials: 48, windowsMs: 100,
+    trainingTrials: 192, validationTrials: 48, windowsMs: NEURAL_WINDOW_MS,
     heads: { movement: metric(), handling: metric(), swing: metric(), aim: metric() } };
   const runtime = createRuntime(seed);
   const total = report.trainingTrials + report.validationTrials;
+  const rehearsal: { frame: { rates: Float32Array; tick: number; simulatedMs: number; silenced: boolean }; targets: Partial<Record<Head, number>> }[] = [];
   let recordedSpikes = 0;
   try {
     for (let index = 0; index < total; index++) {
@@ -84,15 +85,14 @@ export async function calibrate(createRuntime: (seed: number) => RuntimePort, se
       const observation = offlineTrial(index, random), targets = teacher(observation);
       const frame = runtime.advance(encodeObservation(observation), report.windowsMs);
       recordedSpikes += frame.spikes.length;
+      if (index === report.trainingTrials) replay();
       if (!frame.silenced && frame.spikes.length) {
-        for (const head of Object.keys(targets) as Head[]) {
-          const target = targets[head]!, model = models[head], metric = report.heads[head];
-          if (index < report.trainingTrials) {
-            // Multiple optimizer passes reuse a measured response, never a fabricated feature vector.
-            for (let pass = 0; pass < 12; pass++) metric.loss += model.teach(frame, target, .12);
-          } else {
-            const prediction = model.decide(frame, undefined, { sample: false });
-            metric.samples++; metric.correct += Number(prediction?.index === target);
+        if (index < report.trainingTrials) {
+          rehearsal.push({ frame: { rates: frame.rates.slice(), tick: frame.tick, simulatedMs: frame.simulatedMs, silenced: frame.silenced }, targets });
+        } else {
+          for (const head of Object.keys(targets) as Head[]) {
+            const prediction = models[head].decide(frame, undefined, { sample: false });
+            report.heads[head].samples++; report.heads[head].correct += Number(prediction?.index === targets[head]);
           }
         }
       } else if (index >= report.trainingTrials) {
@@ -100,6 +100,23 @@ export async function calibrate(createRuntime: (seed: number) => RuntimePort, se
       }
       progress(index + 1, total);
       if (index % 4 === 3) await new Promise<void>(resolve => setTimeout(resolve, 0));
+    }
+    function replay(): void {
+      // Shuffled copies of measured rates only. Teachers never invent features.
+      let shuffle = seed;
+      const order = rehearsal.map((_, i) => i);
+      for (let epoch = 0; epoch < 24; epoch++) {
+        for (let i = order.length - 1; i > 0; i--) {
+          shuffle = (Math.imul(shuffle, 1664525) + 1013904223) >>> 0;
+          const j = shuffle % (i + 1); [order[i], order[j]] = [order[j], order[i]];
+        }
+        for (const index of order) {
+          const trial = rehearsal[index];
+          for (const head of Object.keys(trial.targets) as Head[]) {
+            report.heads[head].loss += models[head].teach(trial.frame, trial.targets[head]!, .08);
+          }
+        }
+      }
     }
   } finally { runtime.dispose(); }
   if (!recordedSpikes || Object.values(models).some(model => !model.updates)) throw new Error('Calibration produced no usable neural responses.');

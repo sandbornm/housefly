@@ -2,7 +2,7 @@
 
 Playable route: `/simulations/piano/`, or `/demo/simulations/piano/` in the parent's public build.
 
-Flythoven is an **experimental neural piano task**, with the opening strain of Beethoven's **Fur Elise, WoO 59** as its requested score. It is an opening excerpt, not the complete piece. The notation is the target, not a claim that the fly performs it correctly. Current calibration produces substantial wrong, early, late, and missed notes. It is not yet a skilled or faithful rendition.
+Flythoven is an **experimental neural piano task**, with the opening strain of Beethoven's **Fur Elise, WoO 59** as its requested score. It is an opening excerpt, not the complete piece. The notation is the target, not a claim that the fly performs it correctly. The current v2b controller uses offline-trained readouts with online calibration off by default. Substantial wrong, early, late, and missed notes remain; it is not a skilled or faithful rendition.
 
 ## Score and Provenance
 
@@ -14,12 +14,12 @@ Flythoven is an **experimental neural piano task**, with the opening strain of B
 
 ## Causal Path
 
-The default route retains the v1 controller; the opt-in v2b experiment below is not promoted.
+The ordinary route now runs the latest v2b controller, as requested, even though its historical musical-accuracy promotion criterion failed. This is a default-selection change, not new training or a claim of improvement. The visible status remains **V2 experimental / Offline-calibrated**.
 
-1. `neural-model.ts` encodes the currently requested score, with a 0.16-quarter-beat lookahead, into 32 sensory rates: pitch classes (0-11), octaves (12-15), six requested limbs (16-21), actual limb proprioception (22-27), beat/measure phase (28-29), tonic input (30), and requested polyphony (31). Every channel is bounded to 0-150 Hz.
+1. `neural-model.ts` observes the requested score with a 0.16-quarter-beat lookahead. The default `sensory-associated.ts` maps it to 32 bounded sensory rates: categorical pitches, per-leg pitch and relative onset, actual limb proprioception, and beat/measure phase. Requested notes enter the sensory model, never the actuator directly.
 2. `neural-session.ts` uses the shared `AsyncNeuralRuntime` worker: 139,662 neurons and 5,536,347 measured connections in the parent's experimental LIF model. One real 20 ms model batch is requested at a time. Actual `simulatedMs` is reported separately from the score/audio wall clock; the model is not silently fast-forwarded to pretend it runs in real time.
-3. Six shared `NeuralReadout` instances infer only from the 128 recorded neural pool-rate features. Each has a `rest` action and the pitches in one fixed leg range. Inference is greedy; there are no added random timing errors, score-derived action masks, direct target-to-action shortcuts, or pitch corrections.
-4. Calibration is explicitly enabled by its checkbox. Prediction occurs before teacher feedback. Supervised updates and balanced replay of previously predicted neural observations train the output layers; replay never emits motor actions. Turning Calibration off freezes their weights. The anatomical LIF core is fixed, not a learned or biologically validated piano-playing brain.
+3. Twelve shared `NeuralReadout` instances infer only from the 128 actual neural pool-rate features: one pitch head and one hold/strike head for each leg. Inference is greedy; there are no added random timing errors, score-derived action masks, direct target-to-action shortcuts, or pitch corrections.
+4. Online calibration is off unless explicitly enabled by its checkbox. Frozen inference loads the shipped graph-validated `calibration-v2.json` artifact. When teaching is enabled, prediction precedes feedback and balanced replay never emits motor actions. The anatomical LIF core is fixed, not a learned or biologically validated piano-playing brain.
 5. `actuator.ts` accepts only decoder commands. It validates each leg's range and busy state, moves the foot at a bounded speed, and emits a unique performed event at key contact. That same event drives the actual key hinge, articulated foot, and `PianoAudio.perform()`. Wrong pitches stay wrong; there is no Tone score Part or score-driven fallback.
 
 Pause stops new neural requests, discards late pending results, and freezes pose, displayed state, and calibration. Seeking coalesces resets and invalidates stale actions; it does not play the requested note. Silencing immediately gates new commands and cancels pending strokes. A missing/failed neural runtime leaves autonomous notes disabled. Manual keyboard audition remains explicitly manual and does not fabricate neural activity.
@@ -28,10 +28,11 @@ The connectome receives only actual frames through `updateNeural()` before the w
 
 ## Experimental V2b
 
-- Review URL: `http://127.0.0.1:5173/simulations/piano/?encoder=v2`.
-- Untrained readouts with the same associated encoder: `http://127.0.0.1:5173/simulations/piano/?encoder=v2&weights=cold`.
+- Current public-repository URL: `http://127.0.0.1:5180/simulations/piano/`. The archive's port 5173 is not current.
+- `?encoder=v2` remains an explicit alias of the default. `?weights=cold` deliberately skips the offline weights while retaining the associated encoder and frozen inference.
+- Historical v1 is available only with `?encoder=v1`; it starts with cold readouts and its Calibration checkbox is also off.
 - The public-build equivalents use `/demo/simulations/piano/` with the same query parameters. The calibration artifact is bundled through a relative asset URL; no CDN is used.
-- Both modes plainly display **V2 experimental**, use the restored **72 BPM**, and default to frozen inference with the Calibration checkbox off. The default URL without `encoder=v2` remains v1. Opt-in availability is not a promotion or musical-skill claim.
+- The v2 modes plainly display **V2 experimental**, retain **72 BPM**, and default to frozen inference with the Calibration checkbox off. Latest-controller availability is not a musical-skill claim.
 
 The parent's `sensory-associated.ts` retains categorical pitch evidence on channels 0-11 (120 Hz). Channels 12-17 carry six separate absolute pitches within their fixed physical ranges (25-150 Hz, zero at rest); 18-23 carry per-leg relative-onset phase in milliseconds (0-150 Hz); 24-29 carry actual limb proprioception; 30-31 carry beat/measure phase. This distinguishes the v1 F3/A2 versus A3/F2 limb/octave collision without discarding its categorical pitch evidence. Earlier opponent-pair and input-mapped v2a experiments remain in `sensory.ts` and the archived reports.
 
@@ -51,7 +52,7 @@ The final 72 BPM test used **the same tempo for every controller**, new seeds 22
 | V1 encoding, learned strike heads | 84.4% | 70 | 18 | 8 | 36 | 33 | 87.2 ms |
 | Associated encoding, same learned strike heads | 88.0% | 66 | 32 | 6 | 40 | 33 | 82.3 ms |
 
-**Not promoted; no v2 recording.** Associated encoding improves conditional pitch-head accuracy but loses note coverage and adds wrong notes versus the matched dual-head control. That accuracy measures predictions while a sensory target exists, not the fraction of correctly performed music. Matched-onset error also excludes missed notes. The small tests, variable browser latency, cold initial recurrent state, and changed proprioception after training limit generalization; learned strike timing remains a bottleneck.
+**Historical promotion criterion failed.** Associated encoding improves conditional pitch-head accuracy but loses note coverage and adds wrong notes versus the matched dual-head control. Serving it by the latest-controller directive does not change those results. That accuracy measures predictions while a sensory target exists, not the fraction of correctly performed music. Matched-onset error also excludes missed notes. The small tests, variable browser latency, cold initial recurrent state, and changed proprioception after training limit generalization; learned strike timing remains a bottleneck.
 
 Evidence: `calibration-v2a-report.json` preserves both failed earlier v2a experiments; `calibration-v2b-report.json` preserves the 86/98 BPM final comparison; `calibration-v2b-72-report.json` contains the separate 72 BPM test, fixed protocol, per-leg results, and preserved v1 media/report hashes. Original seeds 1901/2903 were used only as validation in the v2b iteration. No parameters changed after its final test. `calibrate-dual.mjs` reproduces the experiment; `PIANO_TEMPO72=1 node simulations/piano/calibrate-dual.mjs` runs the separate 72-inclusive protocol. Repeating a known test does not make its seeds held out again.
 
@@ -82,11 +83,11 @@ The instrument retains clear-coated ebony, satin keys, brass trim/pins, grained 
 - `audio.performed[]`: matching contact `eventId`, actual `midi`, and audio-context onset `time`. Manual auditions are not counted as neural events.
 - `notation.scoreRole === "requested"` and notation assessment. `scene.connectome.mode === "neural"`, with actual tick, simulated time, spikes, and silencing state.
 
-`await window.__flyPiano.silence(true)` performs neural ablation; `false` releases it. Normal use still requires a gesture to enable audio. No recording is started by the piano.
+`await window.__flyPiano.silence(true)` performs neural ablation; `false` releases it. Silencing cancels pending strokes and prevents new contact/audio events; already sounded strings and reverb can finish their release tails. Normal use still requires a gesture to enable audio. No recording is started by the piano. `captureAudio()` passively taps the existing audio output for the recorder, including production builds; it cannot produce a note or change the controller.
 
 ## Verification
 
-With the parent's local Vite server on port 5173:
+With the new public repository's local server on port 5180:
 
 ```sh
 npx tsc -p simulations/piano/tsconfig.json
@@ -101,4 +102,16 @@ The browser verifier waits for both anatomy and actual neural readiness. It writ
 
 The completed Chromium run rendered near 60 FPS at all five sizes and observed all six limbs, including six simultaneous contacts. Maximum measured foot-to-key error was below `3.2e-16` world units. The first-pass readouts still made many errors; passing these engineering checks does not establish musical skill. Real-device Safari audio and browser-worker behavior are not covered. The parent owns video recording, publication, and deployment.
 
-The additional v2b run passed desktop 1920x1080 and mobile 390x844 checks at 72 BPM: nonblank canvas, no overlay overlap, all six genuinely used legs, 69/66 new contact/audio identity matches, frozen model/weights on pause, quiet silencing, explicit cold-weight mode, and incompatible-model fail-closed behavior. Screenshots and measurements are in `verification/v2-browser/`. Historical `flythoven-neural.mp4` and its report remain unchanged; the recorder now refuses to overwrite finished v1 evidence.
+The historical v2b run passed desktop 1920x1080 and mobile 390x844 checks at 72 BPM: nonblank canvas, no overlay overlap, all six genuinely used legs, 69/66 new contact/audio identity matches, frozen model/weights on pause, quiet silencing, explicit cold-weight mode, and incompatible-model fail-closed behavior. These are historical measurements, not a new capture.
+
+The current default-selection change passes 50 piano tests and the piano TypeScript check, including the real shipped WASM graph/weights ablation test in `neural-current.test.ts`. That test observes actual contacts, zero new commands/contacts under silence, recovery, and unchanged readout updates. `verify-v2.mjs` now tests the ordinary default URL. The new frozen-production run passed at desktop 1920x1080 and mobile 390x844, observing 80/70 contact/audio pairs across all six legs, 323/134 canvas color buckets, no overlap/overflow, frozen readouts, quiet silence across score-loop resets, cold mode, and incompatible-weight failure. Evidence is under `verification/current-browser/`.
+
+## Current Recording
+
+The current capture completed on 2026-09-13 from a frozen production preview on temporary port 5188. That preview has been closed; the parent-owned development server is on 5180. `PIANO_URL=http://127.0.0.1:5180/simulations/piano/ node scripts/record_piano.mjs` is the recorder invocation, but its overwrite protection now preserves the finished take. Prefer a frozen production preview supplied through `PIANO_URL` for future versioned captures; no dev-only Tone module import is needed. The archived port 5173 and query overrides are rejected. Do not run concurrently with another neural capture.
+
+Verified outputs are `docs/media/flythoven-neural-current.mp4` and `.png`: one uninterrupted 30-second inference take, 31 seconds including lead/tail, at unchanged 72 BPM. The take contains 195 matched physical contact/audio event IDs: L1/L2/L3 = 33/26/32 and R1/R2/R3 = 23/60/21, with up to three simultaneous contacts. Its 62 on-time, 29 early, 17 late, 87 wrong notes and 51 missed targets are retained. All twelve readouts stayed frozen; maximum observed request latency was 44.3 ms, rendered cadence 60.03 FPS, and foot/key error below `3.2e-16` world units. This is authentic current behavior, not a successful rendition.
+
+`neural-current-recording.json` is the concise versioned evidence, including media/artifact hashes. Full JSON telemetry, source hashes, a separate-session WASM silence/audio precheck, per-contact/audio IDs, and decoded-file checks remain under `verification/neural-current-recording/`. The fixed poster time is 10 seconds. No accuracy threshold or six-leg count selected the take. Encoding used two ffmpeg threads, H.264/AAC, 1080p/30 FPS, and faststart, with only global loudness normalization and an ending audio fade. Full decode, seven encoded score-cursor checks, and delivered audio onset within 41 ms of the scheduled first contact passed.
+
+Historical `flythoven.mp4/.png` and `flythoven-neural.mp4/.png` are hashed and preserved. Existing current raw captures and completed outputs are never overwritten for another attempt. `PIANO_VERIFY_CAPTURE=1` verifies/encodes the same saved capture without running inference again; it does not select a better take.

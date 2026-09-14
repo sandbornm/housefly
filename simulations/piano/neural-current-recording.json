@@ -1,0 +1,445 @@
+{
+  "passed": true,
+  "startedAt": "2026-09-14T00:33:52.781Z",
+  "url": "http://127.0.0.1:5180/simulations/piano/",
+  "selection": "Single continuous take with frozen shipped weights and fresh recurrent state; no selection based on musical accuracy; fixed 10s poster",
+  "inferenceSeconds": 30,
+  "durationSeconds": 31,
+  "targetBpm": 72,
+  "calibration": false,
+  "requestedScore": "Fur Elise, public-domain opening excerpt; target only",
+  "source": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931",
+  "sourceHashes": {
+    "simulations/piano/main.ts": "3749540c46fb4bb683e007c7894154a9b8feddbe800ddec0a38ff4ff4d41b172",
+    "simulations/piano/controller-options.ts": "7187cedb49e79f6e0668cc0033fa75116472a496588a1eccc8946c0e77707b5a",
+    "simulations/piano/index.html": "d2dd4acb6a4a6f48fb1184223a5e9498b0c7fc9e35b99c0df343d513f3b8351e",
+    "simulations/piano/scene.ts": "a98534e115dae6c54975e40c5aa3284384919a5b6efd4a23a1705bb9f554c4b7",
+    "simulations/piano/audio.ts": "587ae5bb9e8f317184fd12f280748d551dd87fd5df78b8f8ebb6b027ac3a9c9b",
+    "simulations/piano/score.ts": "545a71d98495e2e2bb31211cf1e9472c1b35e897158382e1eb4c395e1f874321",
+    "simulations/piano/score-data.ts": "3233b2ec454b739bae442aebaa98f5a8562db31b5ae0e9b24440a4bea06ed6f9",
+    "simulations/piano/notation.ts": "8baf750239016c2b1decafb9c21154c95db21dbff20ffba99dd692181828d95f",
+    "simulations/piano/performance.ts": "450296bb85ab8048020de571b4d93973fb2b17a2198dcfeda5e94b2fcbc45312",
+    "simulations/piano/actuator.ts": "7ae174dae499ba8a947e31e76c38c0158cfb0796ddcf1e137243c26f9de5269c",
+    "simulations/piano/assessment.ts": "70a5845cbff443de9e2b100497b9eff7cd0585d7248946b55721b5d651e5491b",
+    "simulations/piano/neural-model.ts": "fb608dc8d071436746d84ff16f248c9a99df279a3a64f7a44c44e131dceadea9",
+    "simulations/piano/neural-session.ts": "f4c15afe200d90a7ef5081f3692f66b397fe02b2c789dbd9e5e3c0e55701cfe3",
+    "simulations/piano/neural-dual.ts": "737831d54abbd0319448cd28793fd8c6b282a0b214600bd9e3a14bbab6e2259c",
+    "simulations/piano/sensory.ts": "1ffd7fb194f2ce3bd603fd52ac4d8172dfea1d399819fad779dfbf5248737a5a",
+    "simulations/piano/sensory-associated.ts": "182bc19e471eaac73077d71e2127c074fbd78844bb66eee5e48d578d7469d31d",
+    "simulations/piano/calibration-model.ts": "a76e3c1e9c2580afcfbeed493c9bb6bffd0ec90dc54d2f6cf771968de8526bfb",
+    "simulations/piano/calibration-v2.json": "cb063385dc7621942c7a479701f4199d39579c9154b8a23b313bdfabe33e1491",
+    "simulations/piano/style.css": "d39020baf4f0aab2919fc4722f593aba9ca5a8cebd179f816aa281feab224b26",
+    "scripts/record_piano.mjs": "f67d304726241136267a0a764a15e7d62cfad6cb4ce0c34c80971f2717672e2a",
+    "src/activityConnectome.ts": "70c5dc2ac29fd916a41b012d61e52a9cdcc7d16406e607b12d62661c1a7a250c",
+    "src/activityConnectome.css": "5e816f801afec4bc4ccb3bea6b722d7e3c7273cab1992d7bb04c5734fec6cb6c",
+    "src/neural/client.ts": "705af88eba194ac5e608310b626eda55e93fc4dabf9d0cb82c5bdbac3ef5ac4d",
+    "src/neural/worker.ts": "6a869805b9d4570ccff5b085ec1c5e7699aeb7fb68b1f72b3ac19f1e8137cbd0",
+    "src/neural/runtime.ts": "e28fd804cab2e6dcd6210288ed523bbc2afe9bf3fbe4cfcc6f42a97122486890",
+    "src/neural/data.ts": "c539e453558822429f482dcf0edfeb14f96301197bc0b62b8cc58d57f2dd68e1",
+    "src/neural/policy.ts": "0a33e8482d7b0f196cf5090ae513269528f27913c366e75419e9747fff9653bf",
+    "public/neural/manifest.json": "e795efbc79cd6d82fda474ef29f9c9f7638d3c664f1c81b4420e70ed0933772f",
+    "public/neural/male_cns_lif.wasm": "7d3643b4bce10ea7d5724c1756cebf706f2a7d8065670826a09d6522e2bfbfe2"
+  },
+  "legacy": {
+    "path": "/Users/minimu/Github/housefly/docs/media/flythoven.mp4",
+    "role": "Old score-driven two-front-leg recording; preserved unchanged",
+    "sha256": "967795180e228a88d6f361f0a96c2188aec995664a8022aa9db3f0bd06a4a88a"
+  },
+  "preservedMedia": {
+    "flythoven.mp4": "967795180e228a88d6f361f0a96c2188aec995664a8022aa9db3f0bd06a4a88a",
+    "flythoven.png": "f2c5636b42f601a6f25c2961830850489ea5e2a44b3b742ee310f51e8eb391bc",
+    "flythoven-neural.mp4": "7f1186a0450af40ac8d0b1d491b0e7cff5987e48aca7b00b83c8cbff2fcba921",
+    "flythoven-neural.png": "669e23ffdb2623004f2b030e7d380d53b8966645912bc2c2c2f9f18b9557a1b1"
+  },
+  "precheck": {
+    "passed": true,
+    "beforeSilenceContacts": 20,
+    "silenceStartContacts": 20,
+    "silenceEndContacts": 20,
+    "recoveredContacts": 21,
+    "silenceStartSpikes": 0,
+    "silenceEndSpikes": 0,
+    "silenceStartAudioEvents": 20,
+    "silenceEndAudioEvents": 20,
+    "silenceStartCommands": 21,
+    "silenceEndCommands": 21,
+    "audioIdsChecked": 21,
+    "maxContactError": 2.220446049250313e-16,
+    "residualAudio": "Previously struck strings and reverb may decay during silence; no new notes are scheduled"
+  },
+  "files": {
+    "mp4": "/Users/minimu/Github/housefly/docs/media/flythoven-neural-current.mp4",
+    "poster": "/Users/minimu/Github/housefly/docs/media/flythoven-neural-current.png"
+  },
+  "bytes": 6047869,
+  "controller": {
+    "encoder": "flythoven-associated-pitch-v2b",
+    "architecture": "pitch-strike-v1",
+    "provenance": {
+      "kind": "offline-balanced",
+      "trainingFrames": 738,
+      "epochs": 48,
+      "trainingSeeds": [
+        931,
+        947,
+        1777,
+        1889
+      ],
+      "validationSeeds": [],
+      "heldoutSeeds": [
+        22003,
+        24007
+      ],
+      "improved": false
+    },
+    "trainingFrozen": true
+  },
+  "model": {
+    "modelId": "male-cns-v1-lif-dt02-w5-v1",
+    "nodes": 139662,
+    "edges": 5536347
+  },
+  "observedContactEvents": 194,
+  "contactCounts": {
+    "L1": 30,
+    "L2": 30,
+    "L3": 36,
+    "R1": 26,
+    "R2": 49,
+    "R3": 23
+  },
+  "maxSimultaneous": 4,
+  "maxContactError": 3.1401849173675503e-16,
+  "audioIdsMatched": 194,
+  "outcomes": {
+    "on-time": 71,
+    "early": 24,
+    "late": 15,
+    "wrong": 84
+  },
+  "passes": {
+    "0": {
+      "performed": 69,
+      "onTime": 27,
+      "early": 8,
+      "late": 5,
+      "wrong": 29,
+      "missed": 13,
+      "lastBeat": 11.991999999999999
+    },
+    "1": {
+      "performed": 60,
+      "onTime": 20,
+      "early": 7,
+      "late": 5,
+      "wrong": 28,
+      "missed": 21,
+      "lastBeat": 11.991999999999999
+    },
+    "2": {
+      "performed": 65,
+      "onTime": 24,
+      "early": 9,
+      "late": 5,
+      "wrong": 27,
+      "missed": 15,
+      "lastBeat": 11.806399999999996
+    }
+  },
+  "finalReadoutUpdates": [
+    {
+      "legId": "L1",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "L1",
+      "head": "strike",
+      "updates": 35424
+    },
+    {
+      "legId": "L2",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "L2",
+      "head": "strike",
+      "updates": 35424
+    },
+    {
+      "legId": "L3",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "L3",
+      "head": "strike",
+      "updates": 35420
+    },
+    {
+      "legId": "R1",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "R1",
+      "head": "strike",
+      "updates": 35424
+    },
+    {
+      "legId": "R2",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "R2",
+      "head": "strike",
+      "updates": 35424
+    },
+    {
+      "legId": "R3",
+      "head": "pitch",
+      "updates": 35424
+    },
+    {
+      "legId": "R3",
+      "head": "strike",
+      "updates": 35424
+    }
+  ],
+  "replayFrames": 0,
+  "replayRateBytes": 0,
+  "neuralSamples": 274,
+  "maxRequestLatencyMs": 46.400000005960464,
+  "maxCaptureGapMs": 37.00000000000014,
+  "renderFps": 60.03225806451613,
+  "maxBodyVoices": 16,
+  "audioCapacity": 128,
+  "originalLoudness": {
+    "input_i": "-21.64",
+    "input_tp": "-9.60",
+    "input_lra": "1.90",
+    "input_thresh": "-31.71",
+    "output_i": "-18.13",
+    "output_tp": "-6.19",
+    "output_lra": "1.60",
+    "output_thresh": "-28.17",
+    "normalization_type": "dynamic",
+    "target_offset": "0.13"
+  },
+  "meanDb": -20.3,
+  "decodedAudioOnset": 0.275875,
+  "firstScheduledAudioOnset": 0.20266666666666666,
+  "encodedNotation": [
+    {
+      "time": 1,
+      "cursorX": 330,
+      "cursorPixels": 110
+    },
+    {
+      "time": 5,
+      "cursorX": 764,
+      "cursorPixels": 122
+    },
+    {
+      "time": 10,
+      "cursorX": 1817,
+      "cursorPixels": 119
+    },
+    {
+      "time": 15,
+      "cursorX": 763,
+      "cursorPixels": 123
+    },
+    {
+      "time": 20,
+      "cursorX": 1817,
+      "cursorPixels": 123
+    },
+    {
+      "time": 25,
+      "cursorX": 763,
+      "cursorPixels": 124
+    },
+    {
+      "time": 29,
+      "cursorX": 1567,
+      "cursorPixels": 116
+    }
+  ],
+  "atoms": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "size": 32
+    },
+    {
+      "type": "moov",
+      "offset": 32,
+      "size": 39340
+    },
+    {
+      "type": "free",
+      "offset": 39372,
+      "size": 8
+    },
+    {
+      "type": "mdat",
+      "offset": 39380,
+      "size": 6008489
+    }
+  ],
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "h264",
+        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+        "profile": "High",
+        "codec_type": "video",
+        "codec_tag_string": "avc1",
+        "codec_tag": "0x31637661",
+        "mime_codec_string": "avc1.640029",
+        "width": 1920,
+        "height": 1080,
+        "coded_width": 1920,
+        "coded_height": 1080,
+        "has_b_frames": 2,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "level": 41,
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "bt709",
+        "color_primaries": "bt709",
+        "chroma_location": "left",
+        "field_order": "progressive",
+        "is_avc": "true",
+        "nal_length_size": "4",
+        "id": "0x1",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "time_base": "1/15360",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 476160,
+        "duration": "31.000000",
+        "bit_rate": "1358944",
+        "bits_per_raw_sample": "8",
+        "nb_frames": "930",
+        "extradata_size": 51,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "eng",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc62.28.102 libx264"
+        }
+      },
+      {
+        "index": 1,
+        "codec_name": "aac",
+        "codec_long_name": "AAC (Advanced Audio Coding)",
+        "profile": "LC",
+        "codec_type": "audio",
+        "codec_tag_string": "mp4a",
+        "codec_tag": "0x6134706d",
+        "mime_codec_string": "mp4a.40.2",
+        "sample_fmt": "fltp",
+        "sample_rate": "48000",
+        "channels": 2,
+        "channel_layout": "stereo",
+        "bits_per_sample": 0,
+        "initial_padding": 0,
+        "id": "0x2",
+        "r_frame_rate": "0/0",
+        "avg_frame_rate": "0/0",
+        "time_base": "1/48000",
+        "start_pts": 11328,
+        "start_time": "0.236000",
+        "duration_ts": 1477632,
+        "duration": "30.784000",
+        "bit_rate": "192975",
+        "nb_frames": "1443",
+        "extradata_size": 5,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "eng",
+          "handler_name": "SoundHandler"
+        }
+      }
+    ],
+    "format": {
+      "filename": "/Users/minimu/Github/housefly/docs/media/flythoven-neural-current.mp4",
+      "nb_streams": 2,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "start_time": "0.000000",
+      "duration": "31.020000",
+      "size": "6047869",
+      "bit_rate": "1559734",
+      "probe_score": 100,
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "title": "Flythoven - current experimental neural performance",
+        "encoder": "Lavf62.12.102",
+        "comment": "One continuous unselected take: 30 seconds of actual v2b neural inference, offline-trained readouts frozen, fresh recurrent state. 72 BPM requested Fur Elise excerpt, not a faithful rendition. Actual contact-driven synthesized audio and simulated LIF voltage/spikes. Errors retained; no accuracy-based selection or time scaling; global loudness normalization only. Mutopia edition 931."
+      }
+    }
+  },
+  "errors": [],
+  "warnings": [
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead."
+  ],
+  "limitations": "This is the latest controller by user request, not an accuracy improvement: its held-out promotion criterion failed. Offline-trained rate-only pitch/strike heads remain musically inaccurate. The LIF core uses assumed dynamics and engineered interfaces, not measured brain activity or validated fly cognition. Model time differs from the wall-clock score. All wrong/late/missed notes remain visible and audible; no six-leg usage or musical accuracy target is forced."
+}

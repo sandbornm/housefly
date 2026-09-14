@@ -8,7 +8,7 @@ import { resolve } from "node:path";
 const output = resolve("docs/media"), verification = resolve("simulations/flypv/verification");
 await mkdir(output, { recursive: true }); await mkdir(verification, { recursive: true });
 const raw = await mkdtemp(resolve(verification, "neural-take-"));
-const url = process.env.FLYPV_URL ?? "http://127.0.0.1:5173/simulations/flypv/";
+const url = process.env.FLYPV_URL ?? "http://127.0.0.1:5180/simulations/flypv/";
 const sha256 = async path => createHash("sha256").update(await readFile(path)).digest("hex");
 const legacy = resolve(output, "flylot.mp4"), legacyHash = await sha256(legacy);
 const duration = 30, posterSecond = 12;
@@ -21,7 +21,11 @@ command("ffmpeg", ["-version"]);
 const errors = [], warnings = [], states = [], preparation = [];
 let source, startOffset, finalState, initialState, startNavigation, navigations = 0;
 const browser = await chromium.launch({ channel: "chromium", headless: true });
-const snapshot = page => page.evaluate(() => window.__flypv.snapshot());
+const snapshot = (page, audit = false) => page.evaluate(audit => {
+  const state = window.__flypv.snapshot();
+  if (!audit && state.neural) delete state.neural.decisions;
+  return state;
+}, audit);
 function linked(state) {
   assert.equal(state.autopilot, true); assert.equal(state.recoveries, 0);
   assert.equal(state.neural.phase, "inference", state.neural.failure);
@@ -48,20 +52,21 @@ try {
   page.on("framenavigated", frame => { if (frame === page.mainFrame()) navigations++; });
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.locator('#scene[data-ready="true"]').waitFor({ timeout: 90000 });
-  await page.locator('.activity-connectome[data-ready="true"][data-mode="neural"]').waitFor({ timeout: 120000 });
-  const untrained = await snapshot(page);
-  assert.equal(untrained.neural.phase, "uncalibrated"); assert.equal(untrained.motorSource, "none");
-  await page.getByRole("button", { name: "Flight settings", exact: true }).click();
-  await page.locator("#calibrate").click();
+  await page.waitForFunction(() => window.__flypv, undefined, { timeout: 90000 });
   const deadline = Date.now() + 180000;
-  while ((await snapshot(page)).neural.phase === "calibration") {
+  while (!["inference", "failed"].includes((await snapshot(page)).neural?.phase)) {
     const state = await snapshot(page);
-    console.log(JSON.stringify({ preparation: "calibration", trials: state.neural.samples, updates: state.neural.updates, latencyMs: state.neural.latencyMs }));
-    assert.ok(Date.now() < deadline, "Calibration exceeded preparation deadline");
-    await page.waitForTimeout(5000);
+    console.log(JSON.stringify({ preparation: "load", phase: state.neural?.phase, samples: state.neural?.samples, updates: state.neural?.updates }));
+    assert.ok(Date.now() < deadline, "Neural load exceeded preparation deadline");
+    await page.waitForTimeout(1000);
   }
-  assert.equal((await snapshot(page)).neural.phase, "inference");
-  preparation.push({ stage: "calibrated", state: await snapshot(page) });
+  const loaded = await snapshot(page);
+  assert.equal(loaded.autopilot, true);
+  assert.equal(loaded.neural.phase, "inference", loaded.neural.failure);
+  assert.ok(loaded.neural.updates > 0, "Startup restores shipped readout weights");
+  await page.locator('.activity-connectome[data-ready="true"][data-mode="neural"]').waitFor({ timeout: 120000 });
+  await page.getByRole("button", { name: "Flight settings", exact: true }).click();
+  preparation.push({ stage: "loaded", state: await snapshot(page) });
 
   // Explicit pre-capture intervention. No resets or motor interventions occur in the take.
   await page.getByRole("button", { name: "Reset flight", exact: true }).click();
@@ -72,6 +77,7 @@ try {
   const silent = await snapshot(page);
   assert.equal(silent.appliedTarget, null); assert.equal(silent.motorSource, "none");
   assert.equal(silent.neural.command.yawRate, 0); assert.equal(silent.neural.spikeCount, 0);
+  assert.equal(silent.connectome.energy, 0); assert.equal(silent.connectome.active, 0);
   await page.waitForFunction(start => window.__flypv.snapshot().elapsed > start + .6, silent.elapsed);
   const falling = await snapshot(page);
   assert.equal(falling.appliedTarget, null); assert.equal(falling.neural.spikeCount, 0);
@@ -111,7 +117,18 @@ try {
     }
     await page.waitForTimeout(180);
   }
-  finalState = await snapshot(page); linked(finalState);
+  finalState = await snapshot(page, true); linked(finalState);
+  const decisions = finalState.neural.decisions.filter(decision => decision.sequence > initialState.neural.decisionCount);
+  assert.equal(decisions.length, finalState.neural.decisionCount - initialState.neural.decisionCount, "Complete per-decision evidence");
+  assert.ok(decisions.length > 0);
+  for (const decision of decisions) {
+    let hash = 2166136261;
+    const rates = Float32Array.from(decision.rates);
+    assert.equal(rates.length, 128);
+    for (const bits of new Uint32Array(rates.buffer)) hash = Math.imul(hash ^ bits, 16777619) >>> 0;
+    assert.equal(hash, decision.featureHash);
+    if (decision.powered) assert.equal(decision.readoutTick, decision.frameTick);
+  }
   // Encoding retains only the fixed take, excluding preparation and this trailing pad.
   await page.waitForTimeout(750);
   const video = page.video();
@@ -124,7 +141,7 @@ assert.ok(finalState.neural.frameTick > initialState.neural.frameTick);
 assert.ok(finalState.neural.totalSpikes > initialState.neural.totalSpikes);
 assert.ok(finalState.frames > initialState.frames, "World rendering remained live");
 assert.equal(await sha256(legacy), legacyHash, "Legacy flylot.mp4 must remain unchanged");
-const file = resolve(output, "flylot-neural.mp4"), encoded = resolve(raw, "flylot-neural.mp4");
+const file = resolve(output, "flylot-neural-current.mp4"), encoded = resolve(raw, "flylot-neural-current.mp4");
 command("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-ss", String(startOffset), "-threads", "2", "-i", source,
   "-t", String(duration), "-an", "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "18",
   "-threads", "2", "-pix_fmt", "yuv420p", "-movflags", "+faststart", encoded]);
@@ -140,17 +157,17 @@ for (let offset = 0; offset + 8 <= bytes.length;) {
   atoms.push(bytes.toString("ascii", offset + 4, offset + 8)); offset += size;
 }
 assert.ok(atoms.indexOf("moov") >= 0 && atoms.indexOf("moov") < atoms.indexOf("mdat"), "Faststart metadata precedes media");
-const poster = resolve(output, "flylot-neural.png");
+const poster = resolve(output, "flylot-neural-current.png");
 command("ffmpeg", ["-v", "error", "-y", "-ss", String(posterSecond), "-threads", "2", "-i", encoded, "-frames:v", "1", "-threads", "2", poster]);
 await rename(encoded, file);
 const report = {
   file, poster, source, url, seed: 8731, duration, posterSecond, startOffset, probe, legacyHash, errors, warnings,
-  capture: "One continuous first take after explicit calibration and ablation. Fixed camera schedule; no motor overrides, resets, collision edits, hidden expert or outcome selection during capture.",
+  capture: "One continuous first take after restoring shipped readout weights and an explicit pre-capture ablation/reset. Neural mode is the startup default. Fixed camera schedule; no motor overrides, resets, collision edits, hidden expert or outcome selection during capture.",
   limitations: "Experimental engineered neural interface, not validated fly cognition or innate drone flight. Model and physical clocks differ; encoded 30 fps can duplicate rendered frames. Missed goals, hovering and contacts are retained.",
   preparation, initialState, finalState, states,
   outcome: { worldSeconds: finalState.elapsed - initialState.elapsed, modelMilliseconds: finalState.neural.simulatedMs - initialState.neural.simulatedMs,
     reached: finalState.activity.waypoints, contacts: finalState.activity.contacts, actions: [...new Set(states.map(sample => sample.state.neural.command.action))],
     displacementMeters: Math.hypot(finalState.position.x - initialState.position.x, finalState.position.y - initialState.position.y, finalState.position.z - initialState.position.z) },
 };
-await writeFile(resolve(verification, "neural-recording.json"), JSON.stringify(report, null, 2));
+await writeFile(resolve(verification, "neural-recording-current.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify({ file, poster, outcome: report.outcome, probe, legacyPreserved: true }, null, 2));

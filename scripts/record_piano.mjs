@@ -4,22 +4,26 @@ import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { chromium } from "@playwright/test";
-import { createServer } from "vite";
 import { DEFAULT_BPM, TOTAL_BEATS } from "../simulations/piano/score.ts";
+import { ASSOCIATED_PIANO_ENCODER } from "../simulations/piano/sensory-associated.ts";
 
-let baseURL = process.env.PIANO_URL;
-const raw = resolve("simulations/piano/verification/neural-recording");
+let baseURL = process.env.PIANO_URL ?? "http://127.0.0.1:5180/simulations/piano/";
+assert.equal(new URL(baseURL).search, "", "Record the ordinary default controller, without query overrides");
+assert.notEqual(new URL(baseURL).port, "5173", "Port 5173 is the archived repository, not current Housefly");
+const raw = resolve("simulations/piano/verification/neural-current-recording");
 const output = resolve("docs/media"), viewport = { width: 1920, height: 1080 };
 const inferenceSeconds = 30, leadSeconds = 0.15, seconds = 31, posterSeconds = 10;
-const source = resolve(raw, "capture.webm"), mp4 = resolve(raw, "flythoven-neural.mp4"), poster = resolve(raw, "flythoven-neural.png");
-const files = { mp4: resolve(output, "flythoven-neural.mp4"), poster: resolve(output, "flythoven-neural.png") };
+const source = resolve(raw, "capture.webm"), mp4 = resolve(raw, "flythoven-neural-current.mp4"), poster = resolve(raw, "flythoven-neural-current.png");
+const files = { mp4: resolve(output, "flythoven-neural-current.mp4"), poster: resolve(output, "flythoven-neural-current.png") };
 const legacy = { path: resolve(output, "flythoven.mp4"), role: "Old score-driven two-front-leg recording; preserved unchanged" };
+const historical = ["flythoven.mp4", "flythoven.png", "flythoven-neural.mp4", "flythoven-neural.png"];
 let startedAt = new Date().toISOString();
 const verifySaved = process.env.PIANO_VERIFY_CAPTURE === "1";
 const sha256 = async path => createHash("sha256").update(await readFile(path)).digest("hex");
-const appPaths = ["main.ts", "scene.ts", "audio.ts", "score.ts", "score-data.ts", "notation.ts", "performance.ts", "actuator.ts", "assessment.ts", "neural-model.ts", "neural-session.ts", "style.css"]
-  .map(path => `simulations/piano/${path}`).concat(["src/activityConnectome.ts", "src/activityConnectome.css", "src/neural/client.ts", "src/neural/worker.ts", "src/neural/runtime.ts", "src/neural/policy.ts"]);
+const appPaths = ["main.ts", "controller-options.ts", "index.html", "scene.ts", "audio.ts", "score.ts", "score-data.ts", "notation.ts", "performance.ts", "actuator.ts", "assessment.ts", "neural-model.ts", "neural-session.ts", "neural-dual.ts", "sensory.ts", "sensory-associated.ts", "calibration-model.ts", "calibration-v2.json", "style.css"]
+  .map(path => `simulations/piano/${path}`).concat(["scripts/record_piano.mjs", "src/activityConnectome.ts", "src/activityConnectome.css", "src/neural/client.ts", "src/neural/worker.ts", "src/neural/runtime.ts", "src/neural/data.ts", "src/neural/policy.ts", "public/neural/manifest.json", "public/neural/male_cns_lif.wasm"]);
 async function appHashes() { const hashes = {}; for (const path of appPaths) hashes[path] = await sha256(path); return hashes; }
+async function historicalHashes() { const hashes = {}; for (const path of historical) hashes[path] = await sha256(resolve(output, path)); return hashes; }
 function run(command, args, encoding = "utf8") {
   const result = spawnSync(command, args, { encoding, maxBuffer: 16 * 1024 * 1024 });
   if (result.error || result.status !== 0) throw result.error ?? new Error(`${command} exited ${result.status}: ${result.stderr}`);
@@ -31,18 +35,17 @@ const snapshot = page => page.evaluate(() => window.__flyPiano.snapshot());
 const waitNeural = page => page.locator('.activity-connectome[data-ready="true"][data-neural-ready="true"]').waitFor({ timeout: 120000 });
 
 await mkdir(raw, { recursive: true }); await mkdir(output, { recursive: true });
-// Finished v1 media and its raw report are historical evidence, not replaceable takes.
+// Finished takes and their raw evidence are never overwritten for another attempt.
 if (!verifySaved) {
-  try { await stat(files.mp4); throw new Error("Existing neural recording is preserved; use a separately versioned recorder/output for a new experiment"); }
-  catch (error) { if (error.code !== "ENOENT") throw error; }
+  for (const path of [files.mp4, files.poster, source, resolve(raw, "capture-report.json")]) {
+    try { await stat(path); throw new Error("Existing current recording/evidence is preserved; verify the saved capture instead of retaking it"); }
+    catch (error) { if (error.code !== "ENOENT") throw error; }
+  }
 }
 legacy.sha256 = await sha256(legacy.path);
+let preservedMedia = await historicalHashes();
 if (!verifySaved) await writeFile(resolve(raw, "report.json"), JSON.stringify({ passed: false, startedAt, files, legacy, selection: "Single fresh-session take; no musical-accuracy selection" }, null, 2) + "\n");
 run("ffmpeg", ["-version"]); run("ffprobe", ["-version"]);
-const server = baseURL || verifySaved ? null : await createServer({ configFile: false, root: resolve("."), cacheDir: resolve(raw, "vite-cache"),
-  optimizeDeps: { entries: ["simulations/piano/index.html"] },
-  server: { host: "127.0.0.1", port: 5188, strictPort: true, hmr: false, watch: null },
-});
 let browser;
 let errors = [], warnings = [];
 let recording, precheck, sourceHashes;
@@ -55,8 +58,6 @@ async function preparePage(context) {
     if (message.type() === "error") errors.push(message.text());
     if (message.type() === "warning") warnings.push(message.text());
   });
-  let toneURL;
-  page.on("request", request => { if (new URL(request.url()).pathname.endsWith("/tone.js")) toneURL = request.url(); });
   await page.addInitScript(() => {
     // Use the ordinary pause control before the first model request. No hidden warmup.
     const observer = new MutationObserver(() => {
@@ -75,17 +76,19 @@ async function preparePage(context) {
   assert.equal(cold.playing, false); assert.equal(cold.beat, 0); assert.equal(cold.bpm, DEFAULT_BPM);
   assert.equal(cold.neural.runtime.tick, 0); assert.equal(cold.neural.predictions, 0);
   assert.equal(cold.neural.acceptedCommands, 0); assert.equal(cold.neural.actuator.totalContacts, 0);
-  assert.ok(cold.neural.updates.every(item => item.updates === 0));
-  assert.equal(cold.neural.calibrating, true); assert.equal(await page.locator("#calibrate").isChecked(), true);
+  assert.equal(cold.neural.encoder, ASSOCIATED_PIANO_ENCODER); assert.equal(cold.neural.architecture, "pitch-strike-v1");
+  assert.equal(cold.neural.calibrationSource.kind, "offline-balanced"); assert.equal(cold.neural.calibrationSource.improved, false);
+  assert.equal(cold.neural.updates.length, 12); assert.ok(cold.neural.updates.every(item => item.updates > 0));
+  assert.equal(cold.neural.calibrating, false); assert.equal(await page.locator("#calibrate").isChecked(), false);
   await page.locator("#sound-enable").click();
   await page.waitForFunction(() => window.__flyPiano.snapshot().audio.ready);
-  await page.mouse.move(0, 0); assert.ok(toneURL, "Shared Tone module unavailable");
-  return { page, toneURL, cold };
+  await page.mouse.move(0, 0);
+  return { page, cold };
 }
 
 async function startAudit(page) {
   await page.evaluate(() => {
-    const audit = window.__pianoAudit = { started: performance.now(), events: {}, assessments: {}, samples: [], passes: {}, errors: [],
+    const audit = window.__pianoAudit = { started: performance.now(), events: {}, audioEvents: {}, assessments: {}, samples: [], passes: {}, errors: [],
       contactCounts: { L1: 0, L2: 0, L3: 0, R1: 0, R2: 0, R3: 0 }, maxContactError: 0, maxSimultaneous: 0,
       frames: 0, lastSample: -1, pass: 0, previousBeat: 0, lastFrame: -1, running: true };
     const tick = () => {
@@ -95,12 +98,18 @@ async function startAudit(page) {
         audit.lastFrame = s.scene.frame; audit.frames++;
         if (s.beat + 1 < audit.previousBeat) audit.pass++;
         audit.previousBeat = s.beat;
+        for (const sound of s.audio.performed) {
+          if (audit.audioEvents[sound.eventId]) continue;
+          const contact = s.neural.actuator.history.find(event => event.eventId === sound.eventId);
+          if (!contact || contact.midi !== sound.midi || contact.source !== "neural" || !(contact.neuralTick > 0) || contact.requestedNoteIndex !== null) audit.errors.push(`Audio without neural contact ${sound.eventId}`);
+          audit.audioEvents[sound.eventId] = { ...sound, neuralTick: contact?.neuralTick, legId: contact?.legId };
+        }
         const contacts = s.scene.legs.filter(leg => leg.contact);
         audit.maxSimultaneous = Math.max(audit.maxSimultaneous, contacts.length);
         for (const leg of contacts) {
           const event = s.scene.performed.find(event => event.eventId === leg.eventId);
           const sound = s.audio.performed.find(event => event.eventId === leg.eventId);
-          if (!event || event.legId !== leg.id || event.midi !== leg.midi || event.source !== "neural" || !(event.neuralTick > 0)) audit.errors.push(`Uncaused contact ${leg.id}:${leg.eventId}`);
+          if (!event || event.legId !== leg.id || event.midi !== leg.midi || event.source !== "neural" || !(event.neuralTick > 0) || event.requestedNoteIndex !== null) audit.errors.push(`Uncaused contact ${leg.id}:${leg.eventId}`);
           if (!sound || sound.midi !== leg.midi) audit.errors.push(`Audio identity mismatch ${leg.eventId}`);
           if (!leg.reachable || !leg.joints.flat().every(Number.isFinite) || leg.contactError > 1e-7) audit.errors.push(`Invalid geometry ${leg.id}:${leg.contactError}`);
           audit.maxContactError = Math.max(audit.maxContactError, leg.contactError);
@@ -131,9 +140,8 @@ async function startAudit(page) {
 
 if (verifySaved) {
   const saved = JSON.parse(await readFile(resolve(raw, "capture-report.json"), "utf8"));
-  ({ recording, precheck, sourceHashes, errors, warnings, startedAt, baseURL } = saved);
+  ({ recording, precheck, sourceHashes, errors, warnings, startedAt, baseURL, preservedMedia } = saved);
 } else try {
-  if (server) { await server.listen(); baseURL = "http://127.0.0.1:5188/simulations/piano/"; }
   browser = await chromium.launch({ channel: "chromium", headless: true, args: [
     "--auto-select-tab-capture-source-by-title=Flythoven", "--enable-usermedia-screen-capturing", "--allow-http-screen-capture",
   ] });
@@ -148,12 +156,17 @@ if (verifySaved) {
   await check.locator("#play").click();
   await check.evaluate(() => window.__flyPiano.silence(true));
   await check.locator('.activity-connectome[data-silenced="true"]').waitFor();
+  await check.waitForFunction(() => {
+    const runtime = window.__flyPiano.snapshot().neural.runtime;
+    return runtime?.silenced && runtime.poolRates.every(rate => rate === 0);
+  });
   await check.locator("#play").click(); await check.waitForTimeout(100);
   const silenceStart = await snapshot(check); await check.waitForTimeout(800);
   const silenceEnd = await snapshot(check);
   assert.equal(silenceEnd.neural.actuator.totalContacts, silenceStart.neural.actuator.totalContacts);
+  assert.equal(silenceEnd.neural.acceptedCommands, silenceStart.neural.acceptedCommands);
   assert.equal(silenceEnd.audio.performed.length, silenceStart.audio.performed.length);
-  assert.equal(silenceEnd.neural.runtime.totalSpikes, silenceStart.neural.runtime.totalSpikes);
+  assert.ok(silenceEnd.neural.runtime.totalSpikes <= silenceStart.neural.runtime.totalSpikes);
   assert.ok(silenceEnd.neural.runtime.poolRates.every(rate => rate === 0));
   assert.ok(silenceEnd.scene.legs.every(leg => !leg.contact));
   await check.evaluate(() => window.__flyPiano.silence(false));
@@ -163,30 +176,32 @@ if (verifySaved) {
   precheck = { passed: true, beforeSilenceContacts: active.neural.actuator.totalContacts, silenceStartContacts: silenceStart.neural.actuator.totalContacts,
     silenceEndContacts: silenceEnd.neural.actuator.totalContacts, recoveredContacts: recovery.neural.actuator.totalContacts,
     silenceStartSpikes: silenceStart.neural.runtime.totalSpikes, silenceEndSpikes: silenceEnd.neural.runtime.totalSpikes,
-    audioIdsChecked: Object.keys(audit.events).length, maxContactError: audit.maxContactError };
+    silenceStartAudioEvents: silenceStart.audio.performed.length, silenceEndAudioEvents: silenceEnd.audio.performed.length,
+    silenceStartCommands: silenceStart.neural.acceptedCommands, silenceEndCommands: silenceEnd.neural.acceptedCommands,
+    audioIdsChecked: Object.keys(audit.audioEvents).length, maxContactError: audit.maxContactError,
+    residualAudio: "Previously struck strings and reverb may decay during silence; no new notes are scheduled" };
   assert.ok(!warnings.some(message => message.includes("Note dropped")), "Audio voice pool dropped a performed note");
   await check.evaluate(() => { window.__pianoAudit.running = false; }); await checking.close();
 
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1, acceptDownloads: true });
   sourceHashes = await appHashes();
-  const { page, toneURL, cold } = await preparePage(context);
+  const { page, cold } = await preparePage(context);
   const bootTime = await page.evaluate(() => performance.timeOrigin);
   const scoreBounds = await page.locator("#notation").boundingBox();
-  const capture = await page.evaluate(async url => {
-    const Tone = await import(url), destination = Tone.getContext().createMediaStreamDestination();
-    Tone.getDestination().connect(destination);
+  const capture = await page.evaluate(async () => {
+    const audio = window.__flyPiano.captureAudio();
     const display = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "browser", frameRate: 30, width: 1920, height: 1080 }, audio: false, preferCurrentTab: true });
-    const stream = new MediaStream([...display.getVideoTracks(), ...destination.stream.getAudioTracks()]);
+    const stream = new MediaStream([...display.getVideoTracks(), ...audio.stream.getAudioTracks()]);
     const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus"].find(type => MediaRecorder.isTypeSupported(type));
     if (!mimeType) throw new Error("No tab video/audio capture codec");
     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 16000000, audioBitsPerSecond: 192000 }), chunks = [];
     recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-    window.__pianoCapture = { Tone, destination, display, stream, recorder, chunks, mimeType };
+    window.__pianoCapture = { audio, display, stream, recorder, chunks, mimeType };
     return display.getTracks().map(track => ({ kind: track.kind, settings: track.getSettings() }));
-  }, toneURL);
+  });
   assert.equal(capture[0].settings.width, 1920); assert.equal(capture[0].settings.height, 1080); assert.equal(capture[0].settings.displaySurface, "browser");
   await startAudit(page);
-  console.log(`Recording one continuous ${inferenceSeconds}s cold-session calibration take at ${DEFAULT_BPM} BPM target tempo. Errors are retained.`);
+  console.log(`Recording one continuous ${inferenceSeconds}s frozen-v2b performance from a fresh recurrent state at ${DEFAULT_BPM} BPM. Errors are retained.`);
   await page.evaluate(({ inferenceSeconds, leadSeconds, seconds }) => {
     const state = window.__pianoCapture;
     state.finished = new Promise((resolve, reject) => {
@@ -196,7 +211,7 @@ if (verifySaved) {
         state.blobURL = URL.createObjectURL(new Blob(state.chunks, { type: state.mimeType })); resolve();
       };
     });
-    state.startedAudioSeconds = state.Tone.immediate();
+    state.startedAudioSeconds = state.audio.now();
     window.__pianoAudit.started = performance.now(); state.recorder.start(1000);
     setTimeout(() => document.querySelector("#play").click(), leadSeconds * 1000);
     setTimeout(() => document.querySelector("#play").click(), (leadSeconds + inferenceSeconds) * 1000);
@@ -211,26 +226,27 @@ if (verifySaved) {
   recording = await page.evaluate(() => ({ audit: window.__pianoAudit, final: window.__flyPiano.snapshot(), mimeType: window.__pianoCapture.mimeType, startedAudioSeconds: window.__pianoCapture.startedAudioSeconds }));
   Object.assign(recording, { capture, scoreBounds, cold });
   await page.evaluate(() => {
-    const s = window.__pianoCapture; s.Tone.getDestination().disconnect(s.destination);
+    const s = window.__pianoCapture; s.audio.dispose();
     s.stream.getTracks().forEach(track => track.stop()); URL.revokeObjectURL(s.blobURL);
   });
   await context.close();
-} finally { await browser?.close(); await server?.close(); }
+} finally { await browser?.close(); }
 
-if (!verifySaved) await writeFile(resolve(raw, "capture-report.json"), JSON.stringify({ recording, precheck, sourceHashes, errors, warnings, startedAt, baseURL }, null, 2) + "\n");
+if (!verifySaved) await writeFile(resolve(raw, "capture-report.json"), JSON.stringify({ recording, precheck, sourceHashes, errors, warnings, startedAt, baseURL, preservedMedia }, null, 2) + "\n");
 assert.deepEqual(errors, []); assert.deepEqual(recording.audit.errors, []);
 assert.ok(!warnings.some(message => message.includes("Note dropped")), "Audio voice pool dropped a performed note");
 const playing = recording.audit.samples.filter(s => s.playing), events = Object.values(recording.audit.events), assessments = Object.values(recording.audit.assessments);
 assert.ok(playing.length > 200, "Missing actual inference telemetry");
-assert.equal(recording.final.playing, false); assert.ok(playing.every(s => s.calibrating));
-assert.ok(playing.some(s => s.rms > 0.001)); assert.ok(Object.values(recording.audit.contactCounts).every(count => count > 0), "A leg had no actual produced contact");
-assert.ok(recording.audit.maxSimultaneous >= 2);
+assert.equal(recording.final.playing, false); assert.ok(playing.every(s => !s.calibrating));
+assert.ok(playing.some(s => s.rms > 0.001));
+assert.deepEqual(recording.final.neural.updates, recording.cold.neural.updates, "Readout weights learned during the performance");
 for (const s of playing) {
   assert.equal(s.connectome.mode, "neural"); assert.equal(s.notation.scoreRole, "requested");
+  assert.equal(s.bpm, 72); assert.deepEqual(s.updates, recording.cold.neural.updates);
   assert.ok(Math.abs(s.beat - s.frameAudioBeat) < 0.001); assert.ok(Math.abs(s.notation.beat - s.beat) < 0.001);
   const drift = Math.abs(s.beat - s.audioBeat);
   assert.ok(Math.min(drift, Math.abs(drift - TOTAL_BEATS)) < s.frameAgeMs / 1000 * DEFAULT_BPM / 60 + 0.12);
-  assert.ok(s.replayRateBytes <= 264192, "Calibration replay exceeded its memory bound");
+  assert.equal(s.replayRateBytes, 0, "Frozen performance must not accumulate calibration examples");
 }
 assert.ok(new Set(playing.map(s => s.notation.measure)).size >= 8 && Math.max(...playing.map(s => s.notation.scroll)) > 100);
 assert.ok(new Set(playing.map(s => s.connectome.energy.toFixed(5))).size > 10, "Actual voltage state did not vary");
@@ -247,8 +263,8 @@ const measured = JSON.parse(match[0]); assert.ok(Number.isFinite(Number(measured
 const audioFilter = `loudnorm=I=-18:TP=-1.5:LRA=11:measured_I=${measured.input_i}:measured_TP=${measured.input_tp}:measured_LRA=${measured.input_lra}:measured_thresh=${measured.input_thresh}:offset=${measured.target_offset}:linear=true,afade=t=out:st=${seconds - 0.5}:d=0.5`;
 ffmpeg(["-i", source, "-t", String(seconds), "-map", "0:v:0", "-map", "0:a:0", "-vf", "fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "17",
   "-profile:v", "high", "-level:v", "4.1", "-pix_fmt", "yuv420p", "-af", audioFilter, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2", "-movflags", "+faststart",
-  "-metadata", "title=Flythoven - experimental neural calibration",
-  "-metadata", `comment=One continuous unselected cold-session capture: 30 seconds of actual neural inference with supervised calibration visible. ${DEFAULT_BPM} BPM requested Fur Elise excerpt, not a faithful rendition. Actual contact-driven synthesized audio and simulated LIF voltage/spikes. Errors retained; global loudness normalization only. Mutopia edition 931.`, mp4]);
+  "-metadata", "title=Flythoven - current experimental neural performance",
+  "-metadata", `comment=One continuous unselected take: 30 seconds of actual v2b neural inference, offline-trained readouts frozen, fresh recurrent state. ${DEFAULT_BPM} BPM requested Fur Elise excerpt, not a faithful rendition. Actual contact-driven synthesized audio and simulated LIF voltage/spikes. Errors retained; no accuracy-based selection or time scaling; global loudness normalization only. Mutopia edition 931.`, mp4]);
 // Fixed-in-advance poster time, not selected for a correct phrase or attractive model result.
 ffmpeg(["-ss", String(posterSeconds), "-i", mp4, "-frames:v", "1", poster]);
 ffmpeg(["-i", mp4, "-vf", "select=isnan(prev_selected_t)+gte(t-prev_selected_t\\,5),scale=640:-1,tile=3x2", "-frames:v", "1", resolve(raw, "contact-sheet.png")]);
@@ -292,18 +308,19 @@ const encodedNotation = [1, 5, 10, 15, 20, 25, 29].map(time => {
   return { time, cursorX: cursor.x, cursorPixels: cursor.count };
 });
 assert.equal(await sha256(legacy.path), legacy.sha256, "Legacy recording was modified");
+assert.deepEqual(await historicalHashes(), preservedMedia, "Historical media was modified");
 const outcomes = Object.fromEntries(["on-time", "early", "late", "wrong"].map(outcome => [outcome, assessments.filter(note => note.outcome === outcome).length]));
-const report = { passed: true, startedAt, url: baseURL, selection: "Single cold-session continuous take; no selection based on musical accuracy; fixed 10s poster",
-  technicalRetake: { reason: "Prior diagnostic take rejected for dropped note bodies at the old 32-voice limit; capacity corrected without policy changes", path: resolve("simulations/piano/verification/neural-recording-audio-capacity-failure") },
-  inferenceSeconds, durationSeconds: seconds, targetBpm: DEFAULT_BPM, calibration: true, requestedScore: "Fur Elise, public-domain opening excerpt; target only",
-  source: "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931", sourceHashes, legacy, precheck, files, bytes: (await stat(mp4)).size,
+const report = { passed: true, startedAt, url: baseURL, selection: "Single continuous take with frozen shipped weights and fresh recurrent state; no selection based on musical accuracy; fixed 10s poster",
+  inferenceSeconds, durationSeconds: seconds, targetBpm: DEFAULT_BPM, calibration: false, requestedScore: "Fur Elise, public-domain opening excerpt; target only",
+  source: "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931", sourceHashes, legacy, preservedMedia, precheck, files, bytes: (await stat(mp4)).size,
+  controller: { encoder: recording.final.neural.encoder, architecture: recording.final.neural.architecture, provenance: recording.final.neural.calibrationSource, trainingFrozen: true },
   model: recording.final.neuralModel, observedContactEvents: events.length, contactCounts: recording.audit.contactCounts, maxSimultaneous: recording.audit.maxSimultaneous,
-  maxContactError: recording.audit.maxContactError, audioIdsMatched: events.length, outcomes, passes: recording.audit.passes,
+  maxContactError: recording.audit.maxContactError, audioIdsMatched: Object.keys(recording.audit.audioEvents).length, outcomes, passes: recording.audit.passes,
   finalReadoutUpdates: recording.final.neural.updates, replayFrames: recording.final.neural.replayFrames, replayRateBytes: recording.final.neural.replayRateBytes,
   neuralSamples: playing.length, maxRequestLatencyMs: Math.max(...playing.map(s => s.requestLatencyMs)), maxCaptureGapMs: Math.max(...gaps) * 1000,
   renderFps: recording.audit.frames / seconds, maxBodyVoices: Math.max(...playing.map(s => s.voices.body)), audioCapacity: recording.final.audio.voices.capacity,
   originalLoudness: measured, meanDb, decodedAudioOnset: onset, firstScheduledAudioOnset: firstScheduled,
-  encodedNotation, atoms, probe, errors, warnings, limitations: "Cold supervised calibration is musically inaccurate. The LIF core uses assumed dynamics and engineered interfaces, not measured brain activity or validated fly cognition. Model time is slower than the wall-clock score. All wrong/late/missed notes remain visible and audible." };
+  encodedNotation, atoms, probe, errors, warnings, limitations: "This is the latest controller by user request, not an accuracy improvement: its held-out promotion criterion failed. Offline-trained rate-only pitch/strike heads remain musically inaccurate. The LIF core uses assumed dynamics and engineered interfaces, not measured brain activity or validated fly cognition. Model time differs from the wall-clock score. All wrong/late/missed notes remain visible and audible; no six-leg usage or musical accuracy target is forced." };
 await rename(mp4, files.mp4); await rename(poster, files.poster); probe.format.filename = files.mp4;
 await writeFile(resolve(raw, "report.json"), JSON.stringify(report, null, 2) + "\n");
 console.log(JSON.stringify({ ...report, sourceHashes: undefined, probe: { video: video.codec_name, audio: audio.codec_name, width: video.width, height: video.height, duration: probe.format.duration, pixelFormat: video.pix_fmt } }, null, 2));

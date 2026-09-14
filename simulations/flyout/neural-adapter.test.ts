@@ -188,6 +188,7 @@ test('real full-graph LIF ablation removes decoded movement while the physics cl
     const before = { x: fielder.translation().x, y: ball.translation().y, tick: runtime.snapshot().tick };
     const frame = step();
     assert.equal(frame.silenced, true); assert.equal(frame.spikes.length, 0);
+    assert.ok(frame.levels.every(value => value === 0), 'Silent actual Vm display contains no excitation');
     assert.equal(fielder.translation().x, before.x);
     assert.ok(ball.translation().y < before.y && frame.tick > before.tick);
   } finally { runtime.dispose(); world.free(); }

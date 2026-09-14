@@ -105,6 +105,18 @@ export class PianoAudio {
 
   private releaseVoices(): void { this.body?.releaseAll(); this.hammer?.releaseAll(); }
 
+  // Recording taps the existing output; it cannot schedule notes or change weights.
+  captureOutput() {
+    if (!this.ready || !this.tone) throw new Error("Enable piano audio before capture");
+    const tone = this.tone, source = tone.getDestination();
+    const destination = tone.getContext().createMediaStreamDestination();
+    source.connect(destination);
+    return {
+      stream: destination.stream, now: () => tone.immediate(),
+      dispose: () => { source.disconnect(destination); destination.stream.getTracks().forEach(track => track.stop()); },
+    };
+  }
+
   getDebugState(): object {
     return { ready: this.ready, muted: this.muted, level: this.level, beat: this.getBeat(), state: this.tone?.getContext().state ?? "uninitialized", rms: this.meter?.getValue() ?? 0,
       voices: { body: this.body?.activeVoices ?? 0, capacity: this.body?.maxPolyphony ?? 0 }, performed: [...this.performed] };

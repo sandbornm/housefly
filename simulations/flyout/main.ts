@@ -7,6 +7,7 @@ import { createElement, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CircleDot, Cl
   type IconNode } from 'lucide';
 import { applyResult, BASE_SECONDS, fixedSteps, isFair, newGame, resolveThrow, STEP, type PlateResult } from './game';
 import { BASES, FieldScene, POSITIONS } from './scene';
+import { loadDrosophilaTemplate } from '../../src/flyModel.ts';
 import { ActivityConnectome } from '../../src/activityConnectome';
 import { ACTOR_COUNT, BATTER_ACTOR, type Observation } from './neural-adapter';
 import { NeuralBridge } from './neural-bridge';
@@ -54,7 +55,7 @@ let fairLanded = false;
 let possessor: number | null = null;
 let throwBase = 1;
 let throwDuration = 0;
-let autoplay = false;
+let autoplay = true;
 let autoField = true;
 let paused = false;
 let soundEnabled = false;
@@ -75,7 +76,7 @@ let activityActor = -1;
 let activityLabel = '';
 let lastNeuralRequest = -100;
 const actorVelocities = Array.from({ length: ACTOR_COUNT }, () => new THREE.Vector3());
-const actorActions = Array.from({ length: ACTOR_COUNT }, () => ({ source: 'manual', action: 'Waiting' }));
+const actorActions = Array.from({ length: ACTOR_COUNT }, () => ({ source: 'neural', action: 'Waiting' }));
 let physicsSteps = 0;
 let maximumSteps = 0;
 let renderedFrames = 0;
@@ -322,6 +323,8 @@ function moveFielders(): void {
       fly.group.rotation.y = Math.atan2(direction.x, direction.z);
     }
     fly.moving = before.distanceToSquared(fly.group.position) > .00001;
+    fly.reaching = catchIntent(i);
+    fly.throwing = phase === 'throw' && possessor === i;
     actorVelocities[i].copy(fly.group.position).sub(before).divideScalar(STEP);
     const motion = actorVelocities[i].lengthSq();
     if (motion > mostMotion && !hasManual && reachUntil <= simTime) { mostMotion = motion; activeChaser = i; }
@@ -409,7 +412,8 @@ function fixedUpdate(): void {
     const runner = view.runners[0]; runner.group.position.copy(runnerAt(progress));
     const next = runnerAt(Math.min(3.99, progress + .03));
     runner.group.rotation.y = Math.atan2(next.x - runner.group.position.x, next.z - runner.group.position.z);
-  }
+    runner.moving = true;
+  } else if (view) view.runners[0].moving = false;
 }
 
 function showFinal(): void {
@@ -513,7 +517,7 @@ function observeActors(): Observation[] {
   return Array.from({ length: ACTOR_COUNT }, (_, actor) => {
     const batter = actor === BATTER_ACTOR;
     const position = batter ? view!.batter.group.position : view!.fielders[actor].group.position;
-    const home = batter ? { x: -1.5, y: 0, z: 12 } : { x: POSITIONS[actor].x, y: 0, z: POSITIONS[actor].z };
+    const home = batter ? { x: -.55, y: 0, z: 12.15 } : { x: POSITIONS[actor].x, y: 0, z: POSITIONS[actor].z };
     return { ball, velocity, self: { x: position.x, y: position.y, z: position.z },
       selfVelocity: { x: actorVelocities[actor].x, y: 0, z: actorVelocities[actor].z }, home, phase,
       hasBall: !batter && possessor === actor, bounced, batter, runnerDistance, strikes: score.strikes, balls: score.balls };
@@ -584,11 +588,12 @@ function renderFrame(timestamp: number): void {
   $('#timing-fill').style.width = `${progress * 100}%`; $('#timing-needle').style.left = `${progress * 99}%`;
   $('#timing').setAttribute('aria-valuenow', String(Math.round(progress * 100)));
   const swing = simTime - swingTime < .45 ? (simTime - swingTime) / .45 : 0;
+  view.batter.swinging = swing > 0;
   if (!paused && !score.complete && timestamp - lastNeuralRequest >= 100) {
     neural?.advance(observeActors(), activityActor < 0 ? BATTER_ACTOR : activityActor); lastNeuralRequest = timestamp;
   }
   updateActivity();
-  view.render(simTime, delta, !paused && ['pitch', 'live', 'throw'].includes(phase), swing);
+  view.render(simTime, delta, !paused && ['pitch', 'live', 'throw'].includes(phase), swing, phase);
   if (connectome?.element.dataset.neuralReady === 'true') connectome.render();
   const brainPosition = view.activityPosition();
   const activityTag = $('#activity-tag');
@@ -618,8 +623,11 @@ function dispose(): void {
 async function initialize(): Promise<void> {
   let initTimeout: ReturnType<typeof setTimeout> | undefined;
   try {
+    $('#loading-detail').textContent = 'Loading fly anatomy';
+    await loadDrosophilaTemplate();
+    if (disposed) return;
     view = new FieldScene($<HTMLCanvasElement>('#field'));
-    connectome = new ActivityConnectome(view.renderer, { mount: $('#app'), className: 'flyout-connectome', title: 'CONNECTOME' });
+    connectome = new ActivityConnectome(view.renderer, { mount: $('#app'), className: 'flyout-connectome', title: 'CONNECTOME', neural: true });
     connectome.element.dataset.neuralReady = 'false';
     void connectome.ready.then(() => { connectomeReady = connectome?.element.dataset.ready === 'true'; });
     view.activityMount.add(connectome.createMiniature());
@@ -655,6 +663,7 @@ async function initialize(): Promise<void> {
       ball: { ...body.translation() }, fielders: view?.fielders.map(f => ({ x: f.group.position.x, z: f.group.position.z })),
       fieldPixels: view?.fielders.map(f => view!.project(f.group.position.clone().add(new THREE.Vector3(0, 1, 0)))),
       neural: neural ? { ...neural.snapshot(), worldMs: simTime * 1000 } : undefined,
+      controlProvenance: { motors: 'neural unless explicitly manual', pitches: 'game engine', turns: 'game engine', physics: 'Rapier / arcade rules' },
       activity: { actor: activityActor, neuralActor: activityActor < 0 ? BATTER_ACTOR : activityActor,
         chaser: activeChaser, possessor, batter: playBatter, label: activityLabel,
         miniature: view?.activityPosition(), position: view?.activityActor.position.toArray(), connectome: connectome?.snapshot() },

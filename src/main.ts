@@ -11,7 +11,7 @@ import { AsyncNeuralRuntime } from "./neural/client";
 import type { NeuralFrame } from "./neural/client";
 import { NeuralReadout } from "./neural/policy";
 import type { ReadoutDecision } from "./neural/policy";
-import { BLACKJACK_ACTIONS, BLACKJACK_ENCODER, BlackjackNeuralController, restoreBlackjackReadout, saveBlackjackReadout } from "./activities/blackjackNeural";
+import { BLACKJACK_ACTIONS, BLACKJACK_ENCODER, BlackjackNeuralController, encodeBlackjack, observeBlackjack, restoreBlackjackReadout, saveBlackjackReadout } from "./activities/blackjackNeural";
 import type { BlackjackNeuralChoice } from "./activities/blackjackNeural";
 
 interface DecisionSnapshot {
@@ -97,6 +97,7 @@ get<HTMLSelectElement>("brainMode").addEventListener("change", event => {
   const mode = (event.target as HTMLSelectElement).value;
   brainView.setMode(mode); get<HTMLElement>("brainLegend").hidden = mode !== "activity";
 });
+brainView.setEdges(get<HTMLInputElement>("showEdges").checked);
 get<HTMLInputElement>("showEdges").addEventListener("change", event => brainView.setEdges((event.target as HTMLInputElement).checked));
 historySelect.addEventListener("change", () => {
   setAutoplay(false);
@@ -157,6 +158,7 @@ async function initializeNeural(): Promise<void> {
     neuralLoading = false;
     if (isNeural()) showNeuralState();
     renderDom(); scheduleAuto(250);
+    void stirBrain();
   } catch (error) { neuralLoading = false; failNeural(error); }
 }
 
@@ -274,9 +276,23 @@ function deal(): void {
   audio.deal();
   refreshOdds();
   if (!isNeural()) { brainView.setIllustrativeMode(); brainView.setPhase(0); }
+  else void stirBrain();
   get("drivePhase").textContent = "Observe";
   get("actionCue").textContent = game.result || "Observing";
   renderDom();
+}
+
+async function stirBrain(): Promise<void> {
+  if (!neuralRuntime || !isNeural() || neuralLoading || neuralControlPending || busy || neuralError || silenceNeural.checked) return;
+  if (game.status !== "playing" && game.status !== "resolved") return;
+  neuralControlPending = true;
+  try {
+    const input = game.dealer.length && game.hands[0]?.cards.length
+      ? encodeBlackjack(observeBlackjack(game)) : new Float32Array(32);
+    latestNeuralFrame = await neuralRuntime.advance(input, 20);
+    if (isNeural()) showNeuralState();
+  } catch (error) { failNeural(error); }
+  finally { neuralControlPending = false; renderDom(); }
 }
 
 function applyMove(action: Action, neural?: ReadoutDecision): void {
@@ -293,6 +309,7 @@ function applyMove(action: Action, neural?: ReadoutDecision): void {
 function manualMove(action: Action): void {
   if (autoplay || busy || !legalActions(game).includes(action)) return;
   neuralController?.discard();
+  tableView.gesture(action, 850 / speed());
   const snapshot = capture(action, "Manual", [], 0);
   void playTrace(snapshot, true, false);
 }
@@ -358,6 +375,7 @@ async function playTrace(snapshot: DecisionSnapshot, execute: boolean, automatic
   busy = true;
   brainView.setPaused(false);
   if (!isNeural()) brainView.setIllustrativeMode();
+  tableView.gesture(snapshot.action, 850 / speed());
   renderDom();
   try {
     for (let phase = 0; phase < (isNeural() ? 0 : 3); phase++) {

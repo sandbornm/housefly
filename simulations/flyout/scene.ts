@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createDrosophila, type DrosophilaActor } from '../../src/flyModel.ts';
+import type { FlyMotion } from './pose.ts';
 
 export const POSITIONS = [
   { code: 'P', name: 'Pip', role: 'Pitcher', x: 0, z: 3 },
@@ -57,83 +59,38 @@ function rod(parent: THREE.Object3D, a: THREE.Vector3, b: THREE.Vector3, materia
 }
 
 export class Fly {
-  group = new THREE.Group();
-  body = new THREE.Group();
-  wings: THREE.Group[] = [];
-  jersey: THREE.MeshStandardMaterial;
+  group: THREE.Group;
+  body: THREE.Group;
   moving = false;
+  reaching = false;
+  throwing = false;
+  swinging = false;
+  private actor: DrosophilaActor;
 
-  constructor(team: number, index: number) {
-    this.jersey = new THREE.MeshStandardMaterial({ color: TEAM_COLORS[team], roughness: .8 });
-    this.group.add(this.body);
-    ellipsoid(this.body, [0, .68, -.39], [.28, .25, .53], bodyMaterial);
-    for (let j = 0; j < 4; j++) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(.23 - j * .021, .025, 5, 20), darkMaterial);
-      ring.position.set(0, .68, -.24 - j * .145); ring.scale.y = .88; this.body.add(ring);
-    }
-    ellipsoid(this.body, [0, .79, .13], [.34, .34, .35], this.jersey);
-    ellipsoid(this.body, [0, .91, .51], [.28, .25, .2], bodyMaterial);
-    for (const side of [-1, 1]) {
-      ellipsoid(this.body, [side * .22, .95, .57], [.17, .21, .13], eyeMaterial);
-      const facets = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.013, 0),
-        new THREE.MeshStandardMaterial({ color: 0xf57b62, roughness: .55 }), 38);
-      const matrix = new THREE.Matrix4();
-      for (let i = 0; i < 38; i++) {
-        const y = 1 - (i + .5) / 19; const r = Math.sqrt(1 - y * y); const angle = i * 2.39996;
-        matrix.makeTranslation(side * .22 + Math.cos(angle) * r * .17, .95 + y * .21, .57 + Math.sin(angle) * r * .13);
-        facets.setMatrixAt(i, matrix);
-      }
-      this.body.add(facets);
-      rod(this.body, new THREE.Vector3(side * .08, 1.04, .64), new THREE.Vector3(side * .17, 1.25, .8), darkMaterial, .4);
-      ellipsoid(this.body, [side * .17, 1.25, .8], [.025, .034, .028], darkMaterial);
-      const wing = new THREE.Group(); wing.position.set(side * .23, 1, -.04); wing.rotation.y = side * -.48;
-      ellipsoid(wing, [side * .31, .025, -.36], [.38, .018, .79], wingMaterial);
-      const points: THREE.Vector3[] = [];
-      for (let i = 0; i < 5; i++) points.push(new THREE.Vector3(0, .047, .1), new THREE.Vector3(side * (.14 + i * .115), .047, -.95 + i * .075));
-      wing.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineBasicMaterial({ color: 0x6a9b83, transparent: true, opacity: .55 })));
-      this.body.add(wing); this.wings.push(wing);
-      rod(this.body, new THREE.Vector3(side * .2, .8, -.08), new THREE.Vector3(side * .45, .86, -.24), bodyMaterial, .4);
-      ellipsoid(this.body, [side * .45, .86, -.24], [.055, .05, .05], bodyMaterial);
-      for (let row = 0; row < 3; row++) {
-        const start = new THREE.Vector3(side * .22, .65, .34 - row * .28);
-        const joint = new THREE.Vector3(side * (.65 + (row === 1 ? .08 : 0)), .39, .62 - row * .57);
-        const end = new THREE.Vector3(side * .78, .07, .86 - row * .7);
-        rod(this.body, start, joint, darkMaterial, .8); rod(this.body, joint, end, darkMaterial, .65);
-      }
-    }
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(.22, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), this.jersey);
-    cap.position.set(0, 1.1, .49); this.body.add(cap);
-    ellipsoid(this.body, [0, 1.115, .7], [.23, .025, .2], this.jersey);
-    const bristles = new THREE.InstancedMesh(new THREE.ConeGeometry(.008, .13, 3), darkMaterial, 25);
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < 25; i++) {
-      const a = i * 2.3999; const h = (i + .5) / 25;
-      dummy.position.set(Math.cos(a) * .31, .79 + h * .27, .13 + Math.sin(a) * .29);
-      dummy.quaternion.setFromUnitVectors(up, new THREE.Vector3(Math.cos(a), .8, Math.sin(a)).normalize());
-      dummy.updateMatrix(); bristles.setMatrixAt(i, dummy.matrix);
-    }
-    this.body.add(bristles);
-    batchMeshes(this.body);
+  constructor(team: number, index: number, scale = 1.22) {
+    this.actor = createDrosophila(TEAM_COLORS[team], scale);
+    this.group = this.actor.group;
+    this.body = this.actor.body;
     this.group.userData.fielder = index;
-    this.group.scale.setScalar(1.25);
+  }
+
+  motion(): FlyMotion {
+    return { moving: this.moving, reaching: this.reaching, throwing: this.throwing, swinging: this.swinging };
   }
 
   animate(time: number, selected: boolean): void {
-    this.body.position.y = this.moving ? .14 + Math.sin(time * 20) * .045 : Math.sin(time * 2.5) * .025;
-    for (let i = 0; i < 2; i++) this.wings[i].rotation.z = (i ? 1 : -1) * (.14 + Math.sin(time * (this.moving ? 65 : 19)) * (this.moving ? .6 : .11));
-    this.group.scale.setScalar(selected ? 1.43 : 1.25);
+    this.actor.animate(time, this.motion(), selected);
   }
 
-  team(team: number): void { this.jersey.color.setHex(TEAM_COLORS[team]); }
+  team(team: number): void { this.actor.setTeam(TEAM_COLORS[team]); }
 }
 
 export class FieldScene {
   scene = new THREE.Scene();
-  camera = new THREE.OrthographicCamera(-40, 40, 30, -30, .1, 250);
+  camera = new THREE.PerspectiveCamera(38, 1, .12, 220);
   renderer: THREE.WebGLRenderer;
-  fielders = POSITIONS.map((_, i) => new Fly(1, i));
-  batter = new Fly(0, -1);
+  fielders = POSITIONS.map((_, i) => new Fly(1, i, i === 0 ? 1.35 : 1.12));
+  batter = new Fly(0, -1, 1.38);
   runners = Array.from({ length: 4 }, () => new Fly(0, -1));
   ball = new THREE.Group();
   bat = new THREE.Group();
@@ -155,8 +112,11 @@ export class FieldScene {
   private trailPositions = new Float32Array(24 * 3);
   private shadow: THREE.Mesh;
   private observer: ResizeObserver;
-  private target = new THREE.Vector3(0, 0, -1);
-  private viewHeight = 55;
+  private target = new THREE.Vector3(0, 1.2, 8);
+  private viewHeight = 12;
+  private desired = new THREE.Vector3();
+  private look = new THREE.Vector3();
+  strikeZone: THREE.Group;
   private raycaster = new THREE.Raycaster();
   private width = 1;
   private height = 1;
@@ -182,8 +142,13 @@ export class FieldScene {
     this.scene.add(sun);
     this.buildPark();
     batchMeshes(this.scene);
-    this.fielders.forEach((fly, i) => { fly.group.position.set(POSITIONS[i].x, 0, POSITIONS[i].z); this.scene.add(fly.group); });
-    this.batter.group.position.set(-1.5, 0, 12); this.batter.group.rotation.y = Math.PI / 2; this.scene.add(this.batter.group);
+    this.fielders.forEach((fly, i) => {
+      fly.group.position.set(POSITIONS[i].x, 0, POSITIONS[i].z);
+      fly.group.rotation.y = Math.atan2(-POSITIONS[i].x, 12 - POSITIONS[i].z);
+      this.scene.add(fly.group);
+    });
+    this.fielders[0].group.rotation.y = 0;
+    this.batter.group.position.set(-.55, 0, 12.15); this.batter.group.rotation.y = Math.PI; this.scene.add(this.batter.group);
     this.runners.forEach(fly => { fly.group.visible = false; this.scene.add(fly.group); });
     this.contactShadows = new THREE.InstancedMesh(new THREE.CircleGeometry(.72, 24),
       new THREE.MeshBasicMaterial({ color: 0x173c30, transparent: true, opacity: .22, depthWrite: false }), 14);
@@ -231,6 +196,13 @@ export class FieldScene {
     this.activityLeader = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
       new THREE.LineBasicMaterial({ color: 0x366c64, transparent: true, opacity: .85, depthTest: false, depthWrite: false }));
     this.activityLeader.renderOrder = 6; this.activityLeader.frustumCulled = false; this.scene.add(this.activityLeader);
+    this.strikeZone = new THREE.Group();
+    const zone = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(.55, .85, .02)),
+      new THREE.LineBasicMaterial({ color: 0xf4f1c8, transparent: true, opacity: .85 }));
+    zone.position.set(-.2, .78, 11.72); this.strikeZone.add(zone);
+    this.scene.add(this.strikeZone);
+    this.camera.position.set(2.15, 1.72, 14.35);
+    this.camera.lookAt(0, 1.12, 3.4);
     this.observer = new ResizeObserver(() => this.resize()); this.observer.observe(canvas);
     this.resize();
   }
@@ -393,12 +365,20 @@ export class FieldScene {
   private buildBat(): void {
     const wood = new THREE.MeshStandardMaterial({ color: 0xe8c890, roughness: .6 });
     const grip = new THREE.MeshStandardMaterial({ color: 0x443c30, roughness: .9 });
-    rod(this.bat, new THREE.Vector3(.2, .7, .48), new THREE.Vector3(.2, 1.1, .7), grip, 1.5);
-    rod(this.bat, new THREE.Vector3(.2, 1.1, .7), new THREE.Vector3(.2, 2.4, 1.15), wood, 3.2);
-    this.bat.rotation.z = -.7;
+    rod(this.bat, new THREE.Vector3(0, .42, .05), new THREE.Vector3(.08, .62, .22), grip, 1.4);
+    rod(this.bat, new THREE.Vector3(.08, .62, .22), new THREE.Vector3(.18, 1.05, .72), wood, 2.6);
+    this.bat.position.set(.22, .02, .08);
+    this.bat.rotation.z = -.55;
   }
 
-  resetFielders(): void { this.fielders.forEach((fly, i) => fly.group.position.set(POSITIONS[i].x, 0, POSITIONS[i].z)); }
+  resetFielders(): void {
+    this.fielders.forEach((fly, i) => {
+      fly.group.position.set(POSITIONS[i].x, 0, POSITIONS[i].z);
+      fly.group.rotation.y = i === 0 ? 0 : Math.atan2(-POSITIONS[i].x, 12 - POSITIONS[i].z);
+      fly.moving = fly.reaching = fly.throwing = fly.swinging = false;
+    });
+    this.batter.group.position.set(-.55, 0, 12.15); this.batter.group.rotation.y = Math.PI;
+  }
 
   setTeams(batting: number): void {
     this.fielders.forEach(fly => fly.team(1 - batting)); this.batter.team(batting); this.runners.forEach(fly => fly.team(batting));
@@ -438,8 +418,8 @@ export class FieldScene {
 
   activityPosition(): { x: number; y: number; width: number; height: number } {
     const center = this.project(this.activityFrame.position);
-    const scale = this.height / this.viewHeight * this.activityFrame.scale.x;
-    return { ...center, width: 4.65 * scale, height: 4.15 * scale };
+    const height = this.width <= 700 ? 64 : 108;
+    return { ...center, width: height * 4.65 / 4.15, height };
   }
 
   setActivityVisible(visible: boolean): void {
@@ -467,22 +447,40 @@ export class FieldScene {
     this.playArea = { left, top, width: Math.max(100, right - left), height: Math.max(100, bottom - top) };
   }
 
-  render(time: number, delta: number, movingBall: boolean, swing: number): void {
+  render(time: number, delta: number, movingBall: boolean, swing: number, phase = 'ready'): void {
     if (this.disposed) return;
     this.renderer.info.reset();
     const area = this.playArea;
-    const aspect = area.width / area.height;
-    const followTarget = this.follow ? this.fielders[this.selected].group.position : new THREE.Vector3(0, 0, -1.5);
-    this.target.lerp(followTarget, Math.min(1, delta * 4));
-    const desiredHeight = (this.follow ? Math.max(24, 26 / aspect) : Math.max(43, 64 / aspect)) * this.height / area.height;
-    this.viewHeight += (desiredHeight - this.viewHeight) * Math.min(1, delta * 5);
+    this.camera.aspect = Math.max(.5, this.width / Math.max(1, this.height));
+    const atBat = phase === 'ready' || phase === 'pitch' || phase === 'result';
+    this.strikeZone.visible = atBat;
+    if (this.follow) {
+      const fielder = this.fielders[this.selected].group.position;
+      this.desired.set(fielder.x + 2.4, 3.1, fielder.z + 4.6);
+      this.look.set(fielder.x, 1.1, fielder.z);
+      this.camera.fov = 46;
+    } else if (atBat) {
+      const mound = this.fielders[0].group.position;
+      this.desired.set(2.2, 1.7, 14.3);
+      const ball = this.ball.position;
+      if (phase === 'pitch') this.look.set(ball.x * .2, Math.max(.9, ball.y * .35 + .8), ball.z * .65 + mound.z * .35);
+      else this.look.set(mound.x + .15, 1.14, mound.z + .15);
+      this.camera.fov = this.width <= 700 ? 42 : 34;
+    } else {
+      const ball = this.ball.position;
+      this.desired.set(ball.x - 2.2, Math.max(2.4, ball.y + 2.6), ball.z + 4.4);
+      this.look.set(ball.x, Math.max(.6, ball.y), ball.z - 1.5);
+      this.camera.fov = 50;
+    }
+    const blend = 1 - Math.exp(-3.2 * Math.max(.016, delta));
+    this.camera.position.lerp(this.desired, blend);
+    this.target.lerp(this.look, blend);
+    this.camera.up.set(0, 1, 0);
+    this.camera.lookAt(this.target);
+    this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
+    const dist = this.camera.position.distanceTo(this.target);
+    this.viewHeight = Math.max(6, dist * 1.1);
     const units = this.viewHeight / this.height;
-    const centerX = area.left + area.width / 2, centerY = area.top + area.height / 2;
-    this.camera.left = -centerX * units; this.camera.right = (this.width - centerX) * units;
-    this.camera.top = centerY * units; this.camera.bottom = -(this.height - centerY) * units;
-    const angle = this.width <= 700 ? 0 : 8;
-    this.camera.position.copy(this.target).add(new THREE.Vector3(angle, 42, 42));
-    this.camera.lookAt(this.target); this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
     this.fielders.forEach((fly, i) => fly.animate(time + i * .3, i === this.selected));
     this.batter.animate(time, false); this.runners.forEach((fly, i) => fly.animate(time + i, false));
     [...this.fielders, this.batter, ...this.runners].forEach((fly, i) => {
@@ -511,29 +509,40 @@ export class FieldScene {
     this.trail.visible = movingBall;
     this.landing.rotation.y = time * .45;
     this.activityRing.position.copy(this.activityActor.position); this.activityRing.position.y = .085;
-    const frameScale = Math.max(1, units * (this.width <= 700 ? 64 : 108) / 4.65);
-    this.activityFrame.scale.setScalar(frameScale);
-    this.activityFrame.quaternion.copy(this.camera.quaternion);
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
-    const above = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
-    this.activityFrame.position.copy(this.activityActor.position).add(new THREE.Vector3(0, 2.6, 0));
-    const projected = this.activityPosition(), halfWidth = projected.width / 2, halfHeight = projected.height / 2;
+    const pixelHeight = this.width <= 700 ? 64 : 108;
+    const halfWidth = pixelHeight * 4.65 / 4.15 / 2, halfHeight = pixelHeight / 2;
+    const anchor = this.project(this.activityActor.position.clone().add(new THREE.Vector3(0, 1.9, 0)));
+    const onScreen = Number.isFinite(anchor.x) && Number.isFinite(anchor.y)
+      && anchor.x > area.left - 80 && anchor.x < area.left + area.width + 80
+      && anchor.y > area.top - 80 && anchor.y < area.top + area.height + 80;
+    const originX = onScreen
+      ? THREE.MathUtils.clamp(anchor.x, area.left + halfWidth, area.left + area.width - halfWidth)
+      : area.left + area.width - halfWidth - 12;
+    const originY = onScreen
+      ? THREE.MathUtils.clamp(anchor.y, area.top + halfHeight, area.top + area.height - halfHeight - 16)
+      : area.top + halfHeight + 12;
     const players = [...this.fielders, this.batter, ...this.runners].filter(fly => fly.group.visible)
       .map(fly => this.project(fly.group.position.clone().add(new THREE.Vector3(0, 1, 0))));
     players.push(this.project(this.ball.position));
-    // Keep the instrument beside its actor without masking another fly or the ball.
+    // Keep the instrument on-screen. The 2K camera often puts the batter near or past the frustum edge.
     const offsets = [[halfWidth + 18, -halfHeight * .7], [-halfWidth - 18, -halfHeight * .7],
       [halfWidth + 18, halfHeight], [-halfWidth - 18, halfHeight], [0, -halfHeight - 30], [0, halfHeight + 30],
       [halfWidth + 50, -halfHeight * .7], [-halfWidth - 50, -halfHeight * .7],
       [halfWidth + 50, halfHeight], [-halfWidth - 50, halfHeight]];
-    let best = Infinity, frameX = projected.x, frameY = projected.y;
+    let best = Infinity, frameX = originX, frameY = originY;
     offsets.forEach(([dx, dy], index) => {
-      const x = THREE.MathUtils.clamp(projected.x + dx, area.left + halfWidth, area.left + area.width - halfWidth);
-      const y = THREE.MathUtils.clamp(projected.y + dy, area.top + halfHeight, area.top + area.height - halfHeight - 16);
+      const x = THREE.MathUtils.clamp(originX + dx, area.left + halfWidth, area.left + area.width - halfWidth);
+      const y = THREE.MathUtils.clamp(originY + dy, area.top + halfHeight, area.top + area.height - halfHeight - 16);
       const cost = players.filter(p => Math.abs(p.x - x) < halfWidth + 12 && Math.abs(p.y - y) < halfHeight + 14).length * 100 + index;
       if (cost < best) { best = cost; frameX = x; frameY = y; }
     });
-    this.activityFrame.position.addScaledVector(right, (frameX - projected.x) * units).addScaledVector(above, (projected.y - frameY) * units);
+    const distance = 3.8;
+    const direction = new THREE.Vector3(frameX / this.width * 2 - 1, -(frameY / this.height) * 2 + 1, .5)
+      .unproject(this.camera).sub(this.camera.position).normalize();
+    this.activityFrame.position.copy(this.camera.position).addScaledVector(direction, distance);
+    this.activityFrame.quaternion.copy(this.camera.quaternion);
+    const worldHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) * .5);
+    this.activityFrame.scale.setScalar(pixelHeight / this.height * worldHeight / 4.15);
     const leader = this.activityLeader.geometry.getAttribute('position');
     leader.setXYZ(0, this.activityActor.position.x, this.activityActor.position.y + 1.9, this.activityActor.position.z);
     leader.setXYZ(1, this.activityFrame.position.x, this.activityFrame.position.y, this.activityFrame.position.z);

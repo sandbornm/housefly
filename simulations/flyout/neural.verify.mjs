@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const output = fileURLToPath(new URL('./verification/', import.meta.url));
-const base = process.env.FLYOUT_URL ?? 'http://127.0.0.1:5186/simulations/flyout/';
+const base = process.env.FLYOUT_URL ?? 'http://127.0.0.1:5180/simulations/flyout/';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: 'chromium', headless: true });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
@@ -64,11 +64,15 @@ try {
   assert.equal((await state()).neural.state, 'ready', (await state()).neural.label);
   await page.waitForSelector('.activity-connectome[data-neural-ready="true"]', { timeout: 30000 });
   report.workers = page.workers().map(worker => worker.url());
-  assert.equal(report.workers.filter(url => url.includes('/src/neural/worker.ts')).length, 1, 'One common neural worker (Tone also has an audio clock)');
+  const workerNames = [];
+  for (const worker of page.workers()) workerNames.push(await worker.evaluate(() => self.name));
+  assert.equal(workerNames.filter(name => name === 'male-cns-lif').length, 1, 'One common neural worker, including bundled builds (Tone also has an audio clock)');
   assert.equal(await page.locator('canvas').count(), 1, 'One shared WebGL canvas');
   assert.equal(await page.locator('.activity-connectome').count(), 1);
   await page.waitForFunction(() => window.__flyout.neural.actors.every(actor => actor.totalSpikes > 0));
   const sampleStarted = performance.now(), start = await state();
+  assert.equal(start.autoplay, true); assert.equal(start.autoField, true, 'Actual neural motors are the startup default');
+  assert.equal(start.controlProvenance.pitches, 'game engine');
   assert.equal(start.neural.actors.length, 10); assert.equal(start.neural.edgeCount, 5536347);
   assert.equal(start.activity.connectome.mode, 'neural'); assert.equal(start.activity.connectome.nodes, 139662);
   assert.equal(start.activity.connectome.tick, start.neural.actors[start.activity.neuralActor].tick);
@@ -120,7 +124,11 @@ try {
   assert.deepEqual(physics.fielders, quiet.fielders, 'Silencing removes all autonomous fielder movement');
   assert.ok(physics.neural.actors.every(actor => actor.command.x === 0 && actor.command.z === 0
     && !actor.command.reach && !actor.command.swing && actor.command.throwBase === 0 && actor.spikes === 0));
-  report.ablation = { physicsSteps: physics.physicsSteps - quiet.physicsSteps, ballMoved: true, fieldersFrozen: true };
+  assert.equal(physics.activity.connectome.silenced, true);
+  assert.equal(physics.activity.connectome.energy, 0, 'Silent anatomy has no fabricated excitation');
+  assert.equal(physics.activity.connectome.active, 0);
+  report.ablation = { physicsSteps: physics.physicsSteps - quiet.physicsSteps, ballMoved: true, fieldersFrozen: true,
+    energy: physics.activity.connectome.energy, active: physics.activity.connectome.active };
   console.log('Pause, action-frame matching, and live silencing passed.');
 
   await page.locator('#silence-neural').uncheck();
@@ -135,7 +143,7 @@ try {
 
   const unavailable = await browser.newPage();
   unavailable.on('pageerror', error => report.errors.push(error.message));
-  await unavailable.route('**/calibration.json', route => route.abort());
+  await unavailable.route(/\/calibration(?:-[\w-]+)?\.json(?:\?.*)?$/, route => route.abort());
   await unavailable.goto(base, { waitUntil: 'domcontentloaded' });
   await unavailable.waitForFunction(() => window.__flyout?.neural?.state === 'error');
   assert.ok(await unavailable.locator('#autoplay').isDisabled());

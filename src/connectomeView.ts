@@ -29,8 +29,11 @@ export class ConnectomeView {
   private lastMetric = 0;
   private activityAttribute: THREE.BufferAttribute | null = null;
   private firingAttribute: THREE.BufferAttribute | null = null;
+  private edgeLevels: THREE.BufferAttribute | null = null;
+  private edgeFiring: THREE.BufferAttribute | null = null;
+  private lineMaterial: THREE.ShaderMaterial | null = null;
   private paused = false;
-  private showConnections = false;
+  private showConnections = true;
   private externalActivity = false;
   readonly ready: Promise<void>;
 
@@ -65,8 +68,9 @@ export class ConnectomeView {
           float r = length(gl_PointCoord - vec2(0.5));
           if (r > 0.5) discard;
           gl_FragColor = vec4(mix(vColor,vec3(1.,.88,.60),vFiring), min(1.,0.34 + abs(vActivity)*0.55 + vFiring*.5) * (1.0-smoothstep(0.2,0.5,r)));
+          #include <colorspace_fragment>
         }`,
-      transparent: true, depthWrite: false, blending: THREE.NormalBlending
+      transparent: true, depthWrite: false, blending: THREE.NormalBlending, toneMapped: false
     });
     this.scene.add(this.network);
     new ResizeObserver(() => this.resize()).observe(canvas.parentElement!);
@@ -120,22 +124,52 @@ export class ConnectomeView {
     this.points = new THREE.Points(geometry, this.material);
     this.network.add(this.points);
     const linePositions = new Float32Array(manifest.edgeCount * 6);
+    const lineColors = new Float32Array(manifest.edgeCount * 6);
+    const phases = new Float32Array(manifest.edgeCount * 2);
     for (let i = 0; i < manifest.edgeCount; i++) {
+      const source = this.edges[i*3], target = this.edges[i*3+1];
       for (let axis = 0; axis < 3; axis++) {
-        linePositions[i*6+axis] = xyz[this.edges[i*3]*3+axis];
-        linePositions[i*6+axis+3] = xyz[this.edges[i*3+1]*3+axis];
+        linePositions[i*6+axis] = xyz[source*3+axis];
+        linePositions[i*6+axis+3] = xyz[target*3+axis];
+        lineColors[i*6+axis] = colors[source*3+axis];
+        lineColors[i*6+axis+3] = colors[source*3+axis];
       }
+      phases[i*2] = (i % 71) / 71; phases[i*2+1] = phases[i*2] + 1;
     }
     const lines = new THREE.BufferGeometry();
     lines.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
-    this.lines = new THREE.LineSegments(lines, new THREE.LineBasicMaterial({ color: 0x4fbaa8, transparent: true, opacity: 0.003, depthWrite: false, blending: THREE.AdditiveBlending }));
+    lines.setAttribute("signalColor", new THREE.BufferAttribute(lineColors, 3));
+    lines.setAttribute("phase", new THREE.BufferAttribute(phases, 1));
+    this.edgeLevels = new THREE.BufferAttribute(new Float32Array(phases.length), 1).setUsage(THREE.DynamicDrawUsage);
+    this.edgeFiring = new THREE.BufferAttribute(new Float32Array(phases.length), 1).setUsage(THREE.DynamicDrawUsage);
+    lines.setAttribute("activity", this.edgeLevels);
+    lines.setAttribute("firing", this.edgeFiring);
+    this.lineMaterial = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 }, neuralMode: { value: 0 } },
+      vertexShader: `attribute float activity; attribute float firing; attribute float phase; attribute vec3 signalColor;
+        varying float vActivity; varying float vFiring; varying float vPhase; varying vec3 vColor;
+        void main() { vActivity=activity; vFiring=firing; vPhase=phase; vColor=signalColor;
+          gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+      fragmentShader: `uniform float time; uniform float neuralMode; varying float vActivity; varying float vFiring; varying float vPhase; varying vec3 vColor;
+        void main() {
+          float packet = mix(pow(max(0.,1.-abs(fract(vPhase-time*.28)-.5)*2.),14.), 1., neuralMode);
+          vec3 color = mix(vColor, vec3(1.,.88,.60), vFiring);
+          float alpha = .008 + abs(vActivity) * (.04 + packet * .16) + vFiring * .28;
+          gl_FragColor = vec4(color, alpha);
+          #include <colorspace_fragment>
+        }`,
+      transparent: true, depthWrite: false, depthTest: false, blending: THREE.NormalBlending, toneMapped: false,
+    });
+    this.lines = new THREE.LineSegments(lines, this.lineMaterial);
+    this.lines.renderOrder = -1;
     this.lines.visible = this.showConnections;
     this.network.add(this.lines);
     document.getElementById("neuronCount")!.textContent = manifest.nodeCount.toLocaleString();
-    document.getElementById("edgeCount")!.textContent = `${manifest.edgeCount.toLocaleString()} retained edges`;
-    document.getElementById("brainStatus")!.textContent = "Measured soma positions / event-driven activity";
+    document.getElementById("edgeCount")!.textContent = `${manifest.edgeCount.toLocaleString()} displayed / 5,536,347 simulated`;
+    document.getElementById("brainStatus")!.textContent = "Measured soma positions / awaiting LIF frame";
     this.canvas.dataset.nodes = String(manifest.nodeCount);
     this.canvas.dataset.ready = "true";
+    this.canvas.dataset.mode = "neural-pending";
   }
 
   setPhase(phase: number, action: Action = "Hit"): void {
@@ -155,11 +189,24 @@ export class ConnectomeView {
     firing.fill(0);
     for (const index of frame.spikes) if (index < firing.length) firing[index] = 1;
     this.firingAttribute!.needsUpdate = true;
+    if (this.edgeLevels && this.edgeFiring) {
+      const levels = this.edgeLevels.array as Float32Array;
+      const sparks = this.edgeFiring.array as Float32Array;
+      for (let i = 0; i < this.edges.length / 3; i++) {
+        const source = this.edges[i * 3];
+        const strength = Math.abs(this.levels[source]);
+        levels[i * 2] = strength; levels[i * 2 + 1] = strength;
+        const lit = source < firing.length ? firing[source] : 0;
+        sparks[i * 2] = lit; sparks[i * 2 + 1] = lit;
+      }
+      this.edgeLevels.needsUpdate = true; this.edgeFiring.needsUpdate = true;
+    }
+    if (this.lineMaterial) this.lineMaterial.uniforms.neuralMode.value = 1;
     this.material.uniforms.activeColor.value.set("#67f4be");
     document.getElementById("activeNeurons")!.textContent = active.toLocaleString();
     document.getElementById("meanActivity")!.textContent = energy.toFixed(3);
     document.getElementById("brainStatus")!.textContent = `${options.label} / model step ${frame.tick} / ${frame.simulatedMs.toFixed(1)} ms`;
-    this.canvas.setAttribute("aria-label", "MaleCNS anatomy showing recorded state from the action-generating neural model");
+    this.canvas.setAttribute("aria-label", "MaleCNS anatomy showing recorded LIF voltages and spikes from the action-generating neural model");
     Object.assign(this.canvas.dataset, { mode: "neural", neuralReady: "true", tick: String(frame.tick), spikes: String(frame.totalSpikes), silenced: String(frame.silenced) });
   }
   setIllustrativeMode(): void {
@@ -168,12 +215,17 @@ export class ConnectomeView {
     delete this.canvas.dataset.neuralReady;
     document.getElementById("brainStatus")!.textContent = "Odds baseline / illustrative event projection";
     if (this.firingAttribute) { (this.firingAttribute.array as Float32Array).fill(0); this.firingAttribute.needsUpdate = true; }
+    if (this.edgeFiring) { (this.edgeFiring.array as Float32Array).fill(0); this.edgeFiring.needsUpdate = true; }
+    if (this.lineMaterial) this.lineMaterial.uniforms.neuralMode.value = 0;
   }
   setNeuralPending(message = "Loading the neural controller"): void {
     this.externalActivity = true;
     this.levels.fill(0);
     if (this.activityAttribute) this.activityAttribute.needsUpdate = true;
     if (this.firingAttribute) { (this.firingAttribute.array as Float32Array).fill(0); this.firingAttribute.needsUpdate = true; }
+    if (this.edgeLevels) { (this.edgeLevels.array as Float32Array).fill(0); this.edgeLevels.needsUpdate = true; }
+    if (this.edgeFiring) { (this.edgeFiring.array as Float32Array).fill(0); this.edgeFiring.needsUpdate = true; }
+    if (this.lineMaterial) this.lineMaterial.uniforms.neuralMode.value = 1;
     this.canvas.dataset.mode = "neural-pending";
     delete this.canvas.dataset.neuralReady;
     delete this.canvas.dataset.tick;
@@ -209,12 +261,21 @@ export class ConnectomeView {
         if (this.levels[i] > 0.15) active++;
       }
       this.activityAttribute!.needsUpdate = true;
+      if (this.edgeLevels) {
+        const edges = this.edgeLevels.array as Float32Array;
+        for (let i = 0; i < this.edges.length / 3; i++) {
+          const strength = this.levels[this.edges[i * 3]];
+          edges[i * 2] = strength; edges[i * 2 + 1] = strength;
+        }
+        this.edgeLevels.needsUpdate = true;
+      }
       if (now - this.lastMetric > 160) {
         this.lastMetric = now;
         document.getElementById("activeNeurons")!.textContent = active.toLocaleString();
         document.getElementById("meanActivity")!.textContent = (sum / this.levels.length).toFixed(3);
       }
     }
+    if (this.lineMaterial) this.lineMaterial.uniforms.time.value = this.paused ? this.lineMaterial.uniforms.time.value : now * 0.001;
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }

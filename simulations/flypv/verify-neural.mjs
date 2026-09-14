@@ -52,6 +52,7 @@ try {
   assert.equal(pilot.frame.silenced, true); assert.equal(pilot.command.powered, false);
   assert.equal(pilot.command.target, null); assert.equal(pilot.command.yawRate, 0);
   assert.equal(pilot.frame.spikes.length, 0); assert.ok(pilot.frame.rates.every(value => value === 0));
+  assert.ok(pilot.frame.levels.every(value => value === 0), 'Silencing removes excitation, not just motor commands');
   for (let i = 0; i < 120; i++) physics.step(pilot.command.target, 1);
   assert.ok(physics.position().y < 15, 'Physics continues falling with motor drive removed');
   const result = { passed: true, model: graph.modelId, nodes: graph.nodeCount, simulatedEdges: graph.edgeCount,

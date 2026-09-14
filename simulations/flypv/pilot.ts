@@ -24,6 +24,8 @@ export class NeuralPilot {
   lastLoss = 0;
   latencyMs = 0;
   completedRequests = 0;
+  private decisionCount = 0;
+  private decisions: { sequence: number; frameTick: number; simulatedMs: number; featureHash: number; rates: number[]; spikes: number; action: string; powered: boolean; readoutTick: number | null }[] = [];
   private lastTick = -1;
   private disposed = false;
   private revision = 0;
@@ -75,8 +77,22 @@ export class NeuralPilot {
         this.frame = frame; this.lastTick = frame.tick; this.latencyMs = latency; this.completedRequests++;
         this.command = this.phase === 'inference' ? decodeFlight(frame, this.readout, heading, speed)
           : unpowered(frame.silenced ? 'silenced' : 'unavailable', frame);
+        if (this.phase === 'inference') {
+          this.decisions.push({ sequence: ++this.decisionCount, frameTick: frame.tick, simulatedMs: frame.simulatedMs,
+            featureHash: this.command.featureHash, rates: Array.from(frame.rates), spikes: frame.spikes.length, action: this.command.action,
+            powered: this.command.powered, readoutTick: this.command.readout?.tick ?? null });
+          if (this.decisions.length > 512) this.decisions.shift();
+        }
       });
     });
+  }
+
+  loadWeights(value: unknown): boolean {
+    if (this.disposed || this.phase === 'failed') return false;
+    if (!this.readout.restore(value)) return false;
+    this.phase = 'inference'; this.rehearsal = []; this.samples = this.calibrationTrials;
+    this.command = unpowered(this.silenced ? 'silenced' : 'unavailable', this.frame);
+    return true;
   }
 
   async beginCalibration(): Promise<void> {
@@ -90,7 +106,7 @@ export class NeuralPilot {
       // Rehearsal state never reaches the physical actuator path.
       await this.runtime.reset();
       const observation = calibrationObservation(this.samples), input = encodeFlight(observation);
-      const started = performance.now(), frame = await this.advance(input, 60, true), latency = performance.now() - started;
+      const started = performance.now(), frame = await this.advance(input, NEURAL_WINDOW_MS, true), latency = performance.now() - started;
       const target = teacherAction(observation);
       this.stage(revision, () => {
         this.frame = frame; this.lastTick = frame.tick; this.latencyMs = latency; this.completedRequests++;
@@ -148,6 +164,7 @@ export class NeuralPilot {
   snapshot() {
     return { phase: this.phase, silenced: this.silenced, failure: this.failure, model: this.model, samples: this.samples, calibrationTrials: this.calibrationTrials,
       lastLoss: this.lastLoss, updates: this.readout.updates, busy: this.busy, latencyMs: this.latencyMs, completedRequests: this.completedRequests,
+      decisionCount: this.decisionCount, decisions: this.decisions.map(decision => ({ ...decision, rates: [...decision.rates] })),
       frameTick: this.frame?.tick ?? null, simulatedMs: this.frame?.simulatedMs ?? 0,
       spikeCount: this.frame?.spikes.length ?? 0, totalSpikes: this.frame?.totalSpikes ?? 0, command: { ...this.command, input: { ...this.command.input },
         target: this.command.target ? { ...this.command.target } : null, readout: this.command.readout ? { index: this.command.readout.index, tick: this.command.readout.tick } : null } };

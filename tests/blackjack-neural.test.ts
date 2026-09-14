@@ -118,6 +118,8 @@ test("disabled learning discards credit and guarded storage rejects incompatible
 test("browser: actual LIF actions, credit, replay, silence and 1080p/mobile layout",{skip:!process.env.HOUSEFLY_BROWSER,timeout:240_000},async()=>{
   const {chromium,expect}=await import("@playwright/test");
   const browser=await chromium.launch({headless:true});
+  const target=new URL(process.env.HOUSEFLY_URL ?? "http://127.0.0.1:5173/");
+  target.searchParams.set("seed","1977");
   const output="test-results/casino-evolved/neural"; await mkdir(output,{recursive:true});
   try {
     const page=await browser.newPage({viewport:{width:1920,height:1080}});
@@ -125,7 +127,27 @@ test("browser: actual LIF actions, credit, replay, silence and 1080p/mobile layo
     page.on("pageerror",error=>errors.push(error.message));
     page.on("request",request=>{if(request.url().includes("blackjack.worker"))oddsRequests.push(request.url());});
     const snapshot=()=>page.evaluate(()=> (window as any).__housefly.snapshot());
-    await page.goto("http://127.0.0.1:5173/?seed=1977");
+    const renderedCanvases=async()=>{
+      const samples=await page.evaluate(async()=>{
+        await new Promise(requestAnimationFrame);
+        return ["scene","brainCanvas"].map(id=>{
+          const canvas=document.getElementById(id) as HTMLCanvasElement;
+          const gl=canvas.getContext("webgl2")!;
+          const bytes=new Uint8Array(gl.drawingBufferWidth*gl.drawingBufferHeight*4);
+          gl.readPixels(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight,gl.RGBA,gl.UNSIGNED_BYTE,bytes);
+          let lit=0; const colors=new Set<number>();
+          for(let i=0;i<bytes.length;i+=16){
+            if(bytes[i]+bytes[i+1]+bytes[i+2]>120)lit++;
+            colors.add((bytes[i]>>4)*256+(bytes[i+1]>>4)*16+(bytes[i+2]>>4));
+          }
+          return {id,lit,colors:colors.size,error:gl.getError()};
+        });
+      });
+      // A resting neural frame can be nearly monochrome; require detail, not fabricated color activity.
+      for(const sample of samples){assert.equal(sample.error,0);assert(sample.lit>100,JSON.stringify(sample));assert(sample.colors>8,JSON.stringify(sample));}
+      return samples;
+    };
+    await page.goto(target.href);
     await page.waitForFunction(()=>(window as any).__housefly?.snapshot().ready,null,{timeout:120_000});
     await page.waitForFunction(()=>(window as any).__housefly.snapshot().recentDecisions.some((d:any)=>d.executed),null,{timeout:60_000});
     await page.locator("#autoplayButton").click();
@@ -135,6 +157,7 @@ test("browser: actual LIF actions, credit, replay, silence and 1080p/mobile layo
     assert(executed.recentDecisions.filter((d:any)=>d.executed).every((d:any)=>d.source==="neural"&&d.tick>0));
     assert.deepEqual(oddsRequests,[]);
     assert(await page.evaluate(()=>Object.isFrozen((window as any).__housefly.snapshot().recentDecisions)));
+    const desktopPixels=await renderedCanvases();
     await page.screenshot({path:`${output}/1920x1080.png`,fullPage:true});
     const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth,traceBottom:document.querySelector("#brainTrace")!.getBoundingClientRect().bottom,provenance:document.querySelector("#controllerProvenance")!.textContent}));
     assert.equal(layout.overflow,false); assert(layout.traceBottom<1080,`Decision trace ends at ${layout.traceBottom}`);
@@ -172,16 +195,20 @@ test("browser: actual LIF actions, credit, replay, silence and 1080p/mobile layo
     assert(oddsRequests.length>0,"Only the explicitly selected baseline starts an odds worker");
     await page.locator("#controllerMode").selectOption("neural");
     await page.setViewportSize({width:390,height:844});
+    await page.waitForFunction(()=>(window as any).__housefly.snapshot().ready);
+    await page.locator("#brainCanvas").scrollIntoViewIfNeeded();
+    await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+    const mobilePixels=await renderedCanvases();
     assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     await page.screenshot({path:`${output}/390x844.png`,fullPage:true});
     assert.deepEqual(errors,[]);
     const failedPage=await browser.newPage();
     await failedPage.route("**/neural/manifest.json",route=>route.abort());
-    await failedPage.goto("http://127.0.0.1:5173/?seed=1977");
+    await failedPage.goto(target.href);
     await expect(failedPage.locator("#controllerStatus")).toContainText("Neural model unavailable",{timeout:20_000});
     const failed=await failedPage.evaluate(()=>(window as any).__housefly.snapshot());
     assert.equal(failed.ready,false); assert.equal(failed.game.round,0); assert.deepEqual(failed.recentDecisions,[]);
     await failedPage.close();
-    await writeFile(`${output}/verification.json`,JSON.stringify({executed,silent,learned,layout,errors,oddsRequests},null,2));
+    await writeFile(`${output}/verification.json`,JSON.stringify({executed,silent,learned,layout,desktopPixels,mobilePixels,errors,oddsRequests},null,2));
   } finally {await browser.close();}
 });

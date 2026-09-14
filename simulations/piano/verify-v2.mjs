@@ -3,9 +3,10 @@ import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { chromium } from "@playwright/test";
 import { DEFAULT_BPM } from "./score.ts";
 import { ASSOCIATED_PIANO_ENCODER } from "./sensory-associated.ts";
-const output = new URL("./verification/v2-browser/", import.meta.url);
+const output = new URL("./verification/current-browser/", import.meta.url);
 await mkdir(output, { recursive: true });
-const url = new URL(process.env.PIANO_URL ?? "http://127.0.0.1:5173/simulations/piano/"); url.searchParams.set("encoder", "v2");
+const url = new URL(process.env.PIANO_URL ?? "http://127.0.0.1:5180/simulations/piano/");
+assert.equal(url.search, "", "Verify the ordinary default route, not an encoder override");
 const artifact = JSON.parse(await readFile(new URL("./calibration-v2.json", import.meta.url), "utf8"));
 const browser = await chromium.launch({ channel: "chromium", headless: true }), report = [], errors = [];
 const snapshot = page => page.evaluate(() => window.__flyPiano.snapshot());
@@ -61,12 +62,28 @@ try {
     assert.deepEqual(audit.errors, []); assert.ok(audit.maxError < 1e-7); assert.ok(audit.maxRms > 0.001 && audit.spikes > 0 && Object.keys(audit.ids).length > 0);
     const screenshot = new URL(`${viewport.width}x${viewport.height}.png`, output); await page.screenshot({ path: screenshot.pathname, fullPage: true });
     await page.evaluate(() => window.__flyPiano.silence(true)); await page.locator('.activity-connectome[data-silenced="true"]').waitFor();
-    await page.locator("#play").click(); const quietStart = await snapshot(page); await page.waitForTimeout(600); const quietEnd = await snapshot(page);
-    assert.equal(quietEnd.neural.actuator.totalContacts, quietStart.neural.actuator.totalContacts); assert.ok(quietEnd.neural.runtime.poolRates.every(rate => rate === 0));
+    await page.locator("#play").click(); const quietStart = await snapshot(page), quietSamples = [];
+    for (let sample = 0; sample < 12; sample++) { await page.waitForTimeout(50); quietSamples.push(await snapshot(page)); }
+    const quietEnd = quietSamples.at(-1);
+    assert.equal(quietEnd.neural.actuator.totalContacts, quietStart.neural.actuator.totalContacts);
+    assert.equal(quietEnd.audio.performed.length, quietStart.audio.performed.length);
+    assert.equal(quietEnd.neural.acceptedCommands, quietStart.neural.acceptedCommands);
+    let previousSpikes = quietStart.neural.runtime.totalSpikes;
+    for (const sample of quietSamples) {
+      // A score loop resets the cumulative counter, but cannot create a spike.
+      assert.ok(sample.neural.runtime.totalSpikes <= previousSpikes); previousSpikes = sample.neural.runtime.totalSpikes;
+      assert.equal(sample.neural.runtime.spikeCount, 0); assert.equal(sample.neural.runtime.silenced, true);
+      assert.ok(sample.neural.runtime.poolRates.every(rate => rate === 0));
+      assert.equal(sample.audio.performed.length, quietStart.audio.performed.length);
+      assert.equal(sample.neural.actuator.totalContacts, quietStart.neural.actuator.totalContacts);
+      assert.ok(sample.scene.legs.every(leg => !leg.contact));
+    }
     report.push({ viewport, screenshot: screenshot.pathname, actualAudioContacts: Object.keys(audit.ids).length,
       legs: Object.fromEntries(["L1", "L2", "L3", "R1", "R2", "R3"].map(id => [id, Object.values(audit.ids).filter(event => event.legId === id).length])),
       maxContactError: audit.maxError, maxRms: audit.maxRms, colors, spikes: audit.spikes, assessment: { ...frozen.neural.assessment, outcomes: undefined, events: undefined },
-      pauseFrozen: true, silenceQuiet: true, trainingFrozen: true }); await page.close();
+      pauseFrozen: true, silenceQuiet: true, silenceSamples: quietSamples.map(sample => ({ tick: sample.neural.runtime.tick,
+        totalSpikes: sample.neural.runtime.totalSpikes, spikeCount: sample.neural.runtime.spikeCount,
+        contacts: sample.neural.actuator.totalContacts, audioEvents: sample.audio.performed.length })), trainingFrozen: true }); await page.close();
   }
   const cold = await browser.newPage(); const coldUrl = new URL(url); coldUrl.searchParams.set("weights", "cold");
   await cold.goto(coldUrl.href); await ready(cold);
@@ -75,6 +92,7 @@ try {
   await bad.goto(url.href); await bad.waitForFunction(() => window.__flyPiano?.snapshot().neural.status === "unavailable", null, { timeout: 120000 });
   assert.equal((await snapshot(bad)).playing, false); assert.ok((await snapshot(bad)).scene.legs.every(leg => !leg.contact)); await bad.close();
   assert.deepEqual(errors, []);
-  await writeFile(new URL("report.json", output), JSON.stringify({ passed: true, url: url.href, bpm: DEFAULT_BPM, report, coldMode: true, incompatibleWeightsFailClosed: true, errors }, null, 2) + "\n");
+  await writeFile(new URL("report.json", output), JSON.stringify({ passed: true, url: url.href, bpm: DEFAULT_BPM, defaultController: true,
+    provenance: artifact.provenance, report, coldMode: true, incompatibleWeightsFailClosed: true, errors }, null, 2) + "\n");
   console.log(JSON.stringify({ passed: true, report }, null, 2));
 } finally { await browser.close(); }

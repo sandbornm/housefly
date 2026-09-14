@@ -3,6 +3,8 @@ import type { Action, GameState, Rank } from "./blackjack.ts";
 import { NeuralReadout } from "../neural/policy.ts";
 import type { ReadoutDecision } from "../neural/policy.ts";
 import type { NeuralFrame } from "../neural/runtime.ts";
+import { NeuralTaskController, copyNeuralFrame } from "../neural/task.ts";
+import type { TaskNeuralRuntime } from "../neural/task.ts";
 
 export const BLACKJACK_ACTIONS: readonly Action[] = ["Hit", "Stand", "Double", "Split"];
 export const BLACKJACK_ENCODER = "blackjack-observation-32-v1";
@@ -49,13 +51,10 @@ export function encodeBlackjack(observation: BlackjackObservation): Float32Array
 }
 
 export function copyBlackjackFrame(frame: NeuralFrame): NeuralFrame {
-  return { ...frame, rates: frame.rates.slice(), levels: frame.levels.slice(), spikes: frame.spikes.slice(), counts: frame.counts.slice() };
+  return copyNeuralFrame(frame);
 }
 
-export interface BlackjackNeuralRuntime {
-  readonly silenced: boolean;
-  advance(input: Float32Array, ms: number): Promise<NeuralFrame>;
-}
+export type BlackjackNeuralRuntime = TaskNeuralRuntime;
 export interface BlackjackNeuralChoice {
   frame: NeuralFrame;
   decision: ReadoutDecision;
@@ -65,6 +64,7 @@ export interface BlackjackNeuralChoice {
 export class BlackjackNeuralController {
   readonly runtime: BlackjackNeuralRuntime;
   readonly readout: NeuralReadout;
+  private task: NeuralTaskController<GameState, Action>;
   private round = -1;
   private eligible = false;
   private settled = false;
@@ -73,6 +73,11 @@ export class BlackjackNeuralController {
 
   constructor(runtime: BlackjackNeuralRuntime, readout: NeuralReadout) {
     this.runtime = runtime; this.readout = readout;
+    this.task = new NeuralTaskController(runtime, readout, {
+      id: "blackjack", encoderVersion: BLACKJACK_ENCODER, actions: BLACKJACK_ACTIONS,
+      encode: game => encodeBlackjack(observeBlackjack(game)),
+      legalActions: game => BLACKJACK_ACTIONS.filter(action => legalActions(game).includes(action)),
+    });
   }
 
   beginRound(round: number, eligible: boolean): void {
@@ -84,21 +89,11 @@ export class BlackjackNeuralController {
 
   async decide(game: GameState, onFrame: (frame: NeuralFrame) => void, valid: () => boolean): Promise<BlackjackNeuralChoice | null> {
     if (game.status !== "playing" || this.runtime.silenced || !valid()) return null;
-    const input = encodeBlackjack(observeBlackjack(game));
-    const allowed = BLACKJACK_ACTIONS.map((_,i)=>i).filter(i=>legalActions(game).includes(BLACKJACK_ACTIONS[i]));
-    let frame: NeuralFrame | undefined;
     // Fixed simulated integration time; playback speed only changes the presentation.
-    for (let elapsed=0; elapsed<120; elapsed+=20) {
-      if (!valid() || this.runtime.silenced) return null;
-      frame = await this.runtime.advance(input,20);
-      if (!valid() || this.runtime.silenced || frame.silenced) return null;
-      onFrame(frame);
-    }
-    if (!frame || !valid() || this.runtime.silenced) return null;
-    const decision = this.readout.decide(frame,allowed,{sample:true});
-    if (!decision) return null;
-    this.issued.add(decision);
-    return { frame: copyBlackjackFrame(frame), decision, scores: this.readout.scores(frame)! };
+    const choice = await this.task.decide(game, { durationMs: 120, stepMs: 20, onFrame, valid, sample: true });
+    if (!choice) return null;
+    this.issued.add(choice.decision);
+    return choice;
   }
 
   recordExecuted(round: number, decision: ReadoutDecision): void {

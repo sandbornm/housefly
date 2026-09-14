@@ -84,9 +84,9 @@ export function legTarget(beat: number, id: LegId, loop: boolean, keyPresses?: R
 export function hoverPose(beat: number, reducedMotion = false) {
   const phase = normalizeBeat(beat, true) * Math.PI * 2 / 1.5;
   return {
-    position: [0, 2.35 + (reducedMotion ? 0 : Math.sin(phase) * 0.018), 1.66] as Point3,
-    rotation: [reducedMotion ? 0 : Math.sin(phase) * 0.009, 0, reducedMotion ? 0 : Math.sin(phase / 4) * 0.014] as Point3,
-    wingAngle: 0.2 + (reducedMotion ? 0 : Math.sin(phase * 4) * 0.13),
+    position: [0, 2.35 + (reducedMotion ? 0 : Math.sin(phase) * 0.022), 1.66] as Point3,
+    rotation: [reducedMotion ? 0 : Math.sin(phase) * 0.012, 0, reducedMotion ? 0 : Math.sin(phase / 4) * 0.016] as Point3,
+    wingAngle: 0.18 + (reducedMotion ? 0 : Math.sin(phase * 20) * 0.28),
   };
 }
 

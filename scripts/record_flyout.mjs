@@ -26,10 +26,14 @@ const timeline = [];
 const samples = [];
 let offset, initial, final, poster = false;
 let videoPath;
-const posterPath = join(temporary, 'flyout-neural.png');
-const captureURL = new URL(process.env.FLYOUT_URL ?? 'http://127.0.0.1:5186/simulations/flyout/');
+const posterPath = join(temporary, 'flyout-neural-current.png');
+const captureURL = new URL(process.env.FLYOUT_URL ?? 'http://127.0.0.1:5180/simulations/flyout/');
 captureURL.searchParams.set('seed', '7193');
-const inspect = () => page.evaluate(() => ({ origin: performance.timeOrigin, state: window.__flyout }));
+const inspect = (audit = false) => page.evaluate(audit => {
+  const state = window.__flyout;
+  if (!audit) delete state.neural.decisions;
+  return { origin: performance.timeOrigin, state };
+}, audit);
 
 try {
   await page.goto(captureURL.href, { waitUntil: 'domcontentloaded' });
@@ -41,11 +45,12 @@ try {
   const loaded = await inspect(); initial = loaded.state;
   assert.equal(initial.neural.edgeCount, 5536347); assert.equal(initial.neural.actors.length, 10);
   assert.equal(initial.activity.connectome.mode, 'neural');
+  assert.equal(initial.autoplay, true); assert.equal(initial.autoField, true);
+  assert.equal(initial.controlProvenance.pitches, 'game engine');
   assert.match(await page.locator('#neural-status').textContent(), /calibrated/);
   await page.mouse.move(1910, 1060);
   offset = (Date.now() - videoStarted) / 1000;
   const start = Date.now();
-  await page.locator('#autoplay').check();
   let lastEvent = '';
   while (Date.now() - start < 31000) {
     const current = await inspect(), state = current.state;
@@ -68,13 +73,25 @@ try {
     }
     await page.waitForTimeout(200);
   }
-  final = (await inspect()).state;
+  final = (await inspect(true)).state;
+  const decisions = final.neural.decisions.filter(action => action.sequence > initial.neural.decisionCount);
+  assert.equal(decisions.length, final.neural.decisionCount - initial.neural.decisionCount, 'Complete bounded per-decision evidence');
+  assert.ok(decisions.length > 0);
+  for (const action of decisions) {
+    let hash = 2166136261;
+    const rates = Float32Array.from(action.rates);
+    assert.equal(rates.length, 128);
+    for (const bits of new Uint32Array(rates.buffer)) hash = Math.imul(hash ^ bits, 16777619) >>> 0;
+    assert.equal(hash, action.featureHash);
+    assert.equal(action.tick, action.frameTick); assert.equal(action.command.tick, action.tick);
+    assert.equal(action.command.source, 'neural'); assert.ok(action.spikes > 0);
+  }
   assert.ok(poster && final.physicsSteps > initial.physicsSteps && final.renderedFrames > initial.renderedFrames);
   videoPath = await page.video().path();
 } finally { await context.close(); await browser.close(); }
 
 if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
-const output = join(temporary, 'flyout-neural.mp4');
+const output = join(temporary, 'flyout-neural-current.mp4');
 const encode = spawnSync('ffmpeg', ['-y', '-threads', '2', '-ss', String(offset), '-i', videoPath, '-t', '30', '-an',
   '-vf', 'fps=30', '-filter_threads', '2', '-c:v', 'libx264', '-preset', 'slow', '-threads', '2', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', output], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 });
 if (encode.status) throw new Error(encode.stderr);
@@ -94,14 +111,15 @@ for (let position = 0; position + 8 <= bytes.length;) {
   position += size === 1 ? Number(bytes.readBigUInt64BE(position + 8)) : size;
 }
 assert.ok(boxes.indexOf('moov') >= 0 && boxes.indexOf('moov') < boxes.indexOf('mdat'), 'Faststart metadata precedes video data');
-await rename(output, join(media, 'flyout-neural.mp4'));
-await rename(posterPath, join(media, 'flyout-neural.png'));
-const report = { video: join(media, 'flyout-neural.mp4'), poster: join(media, 'flyout-neural.png'),
-  capture: 'One seed-7193 run, first 30 seconds after enabling actual neural play; fixed midpoint poster. No manual motor actions, score edits, replay selection, or expert fallback. Silent capture.',
+await rename(output, join(media, 'flyout-neural-current.mp4'));
+await rename(posterPath, join(media, 'flyout-neural-current.png'));
+const report = { video: join(media, 'flyout-neural-current.mp4'), poster: join(media, 'flyout-neural-current.png'),
+  url: captureURL.href,
+  capture: 'One seed-7193 run, first 30 seconds after all ten default neural actors are ready; fixed midpoint poster. No manual motor actions, score edits, replay selection, or expert fallback. Pitches, turns and physics are game-engine operations. Silent capture.',
   caveat: 'Weak offline task readouts; not competent baseball or biologically validated cognition. 30 fps encoding does not imply 30 unique simulation frames per second.',
   calibration: initial.neural.calibration, qc: { ablation: qc.ablation, pause: qc.pause, actionFrameMatching: qc.actionFrameMatching },
   timeline, samples, errors, initial, final, ffprobe: metadata, faststart: true };
-await writeFile(join(verification, 'recording-neural.json'), JSON.stringify(report, null, 2));
+await writeFile(join(verification, 'recording-neural-current.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify({ video: report.video, poster: report.poster, timeline, ffprobe: metadata,
   worldElapsedMs: final.neural.worldMs - initial.neural.worldMs, actorElapsedMs: final.neural.actors.map((actor, i) => actor.simulatedMs - initial.neural.actors[i].simulatedMs),
   completedPlays: final.recentPlays, catches: final.catches, throws: final.throws, faststart: true }, null, 2));

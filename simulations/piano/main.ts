@@ -4,6 +4,7 @@ import { PianoAudio } from "./audio";
 import { PianoNotation } from "./notation";
 import { DEFAULT_BPM, MEASURES, TOTAL_BEATS, SilentTransport, clampTempo, measureAt, normalizeBeat } from "./score";
 import { PianoNeuralSession } from "./neural-session";
+import { pianoControllerOptions } from "./controller-options";
 import { AsyncNeuralRuntime } from "../../src/neural/client";
 import "./style.css";
 
@@ -19,9 +20,9 @@ const loopButton = element<HTMLButtonElement>("loop");
 const tempoInput = element<HTMLInputElement>("tempo");
 const volumeInput = element<HTMLInputElement>("volume");
 const calibrationInput = element<HTMLInputElement>("calibrate");
-const query = new URLSearchParams(location.search);
-const experimentalV2 = query.get("encoder") === "v2";
-if (experimentalV2) calibrationInput.checked = false;
+const controller = pianoControllerOptions(location.search);
+const experimentalV2 = controller.version === "v2";
+calibrationInput.checked = controller.calibrating;
 const events = new AbortController();
 const clock = new SilentTransport();
 const audio = new PianoAudio();
@@ -70,7 +71,7 @@ function refreshControls(): void {
   muteButton.disabled = audioBusy || fatal;
   playButton.disabled = !neural || fatal;
   if (!fatal) status.textContent = !neural ? `Neural model ${neuralStatus}` : audioError ? "Audio unavailable" : !clock.playing ? clock.beat >= TOTAL_BEATS ? "Recital complete" : "Paused" : calibrationInput.checked ? "Calibrating" : "Neural performance";
-  if (!fatal && neural && experimentalV2 && clock.playing && !calibrationInput.checked && !audioError) status.textContent = query.get("weights") === "cold" ? "Cold readouts" : "Offline-calibrated";
+  if (!fatal && neural && experimentalV2 && clock.playing && !calibrationInput.checked && !audioError) status.textContent = controller.cold ? "Cold readouts" : "Offline-calibrated";
   if (!fatal) status.textContent = `${experimentalV2 ? "V2 experimental" : "V1"} / ${status.textContent}`;
   statusRoot.classList.toggle("paused", !clock.playing);
 }
@@ -232,7 +233,7 @@ try {
   previousTime = performance.now();
   frameRequest = requestAnimationFrame(frame);
   loadingNeural = new PianoNeuralSession(() => AsyncNeuralRuntime.create(931), neuralUnavailable, experimentalV2 ? {
-    cold: query.get("weights") === "cold",
+    cold: controller.cold,
     calibration: async () => {
       const response = await fetch(new URL("./calibration-v2.json", import.meta.url));
       if (!response.ok) throw new Error(`Piano candidate calibration HTTP ${response.status}`);
@@ -263,5 +264,6 @@ if (import.meta.hot) import.meta.hot.dispose(dispose);
 window.__flyPiano = {
   snapshot: () => ({ playing: clock.playing, beat: clock.beat, bpm: clock.bpm, loop: clock.loop, totalBeats: TOTAL_BEATS, frameAudioBeat: lastFrameAudioBeat, frameAgeMs: performance.now() - frameSampleTime, audio: audio.getDebugState(), scene: scene?.getDebugState(), notation: notation?.snapshot(), neural: neural?.snapshot() ?? { ready: false, status: neuralStatus }, neuralModel }),
   silence: (enabled: boolean) => neural?.silence(enabled),
+  captureAudio: () => audio.captureOutput(),
 };
-declare global { interface Window { __flyPiano?: { snapshot(): object; silence(enabled: boolean): void } } }
+declare global { interface Window { __flyPiano?: { snapshot(): object; silence(enabled: boolean): Promise<void> | undefined; captureAudio(): ReturnType<PianoAudio["captureOutput"]> } } }

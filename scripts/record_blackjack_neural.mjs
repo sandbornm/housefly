@@ -7,7 +7,7 @@ import { chromium } from "@playwright/test";
 
 const raw = resolve("test-results/blackjack-neural-recording");
 const output = resolve("docs/media");
-const files = { video: resolve(output, "housefly-neural.mp4"), poster: resolve(output, "housefly-neural.png") };
+const files = { video: resolve(output, "housefly-neural-current.mp4"), poster: resolve(output, "housefly-neural-current.png") };
 let url;
 const seconds = 40;
 const viewport = { width: 1920, height: 1080 };

@@ -57,7 +57,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 #settingsStatus{min-height:17px}
 .icon-button{width:36px;min-height:36px;padding:0;flex:none}
 .brain-legend{position:absolute;left:14px;right:14px;bottom:15px;display:flex;align-items:center;gap:9px;color:#90a5ad;font-size:10px;pointer-events:none}
-.brain-legend div{height:2px;width:76px;background:linear-gradient(90deg,#365361,#9cefcb)}
+.brain-legend div{height:2px;width:76px;background:linear-gradient(90deg,#3a6cb8,#67f2c4,#f3d27a)}
 .brain-legend[hidden]{display:none}
 .brain-toolbar{display:flex;align-items:center;gap:12px;border-top:1px solid #27353a;padding:12px 0;flex-wrap:wrap}
 .brain-toolbar select{min-width:100px}

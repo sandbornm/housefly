@@ -2,6 +2,8 @@ export const INPUT_COUNT = 32;
 export const FEATURE_COUNT = 128;
 export const NODE_COUNT = 139662;
 export const ACTOR_COUNT = 10;
+/** Play and offline calibration use the same LIF window. */
+export const NEURAL_WINDOW_MS = 10;
 export const BATTER_ACTOR = 9;
 export const MOVE_ACTIONS = ['hold', 'west', 'east', 'north', 'south', 'north-west', 'north-east', 'south-west', 'south-east'];
 export const FIELD_ACTIONS = ['wait', 'reach', 'throw-first', 'throw-second', 'throw-third', 'throw-home'];

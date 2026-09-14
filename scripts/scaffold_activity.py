@@ -15,7 +15,7 @@ def slug(value: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a starter Drosophila Sims activity spec.")
+    parser = argparse.ArgumentParser(description="Create a Housefly neural task adapter and activity spec.")
     parser.add_argument("--id", required=True, help="stable activity id, for example odor-trail")
     parser.add_argument("--title", required=True, help="human-facing activity title")
     args = parser.parse_args()
@@ -24,19 +24,50 @@ def main() -> None:
     target_dir = Path("src/activities")
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / f"{activity_id}.json"
-    if target.exists():
-        raise SystemExit(f"{target} already exists")
+    adapter = target_dir / f"{activity_id}.ts"
+    for path in (target, adapter):
+        if path.exists():
+            raise SystemExit(f"{path} already exists")
 
     payload = {
         "id": activity_id,
         "title": args.title,
         "status": "draft",
-        "sensoryTrace": ["optic", "mushroom", "central"],
-        "motorTrace": ["central", "dn", "vnc"],
-        "notes": "Add task-specific state, rendering, controls, and policy code before exposing this activity in the catalog.",
+        "encoderVersion": f"{activity_id}-32-v1",
+        "controller": "connectome-readout",
+        "notes": "Define observable sensory inputs, legal actions and actuators. The readout starts untrained. See docs/neural-tasks.md before registering a scene.",
     }
-    target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {target}")
+    source = '''import { NeuralReadout, NeuralTaskController } from "../neural/index.ts";
+import type { NeuralTaskAdapter, TaskNeuralRuntime } from "../neural/index.ts";
+
+// Replace these action names with the commands your environment can execute.
+export const ACTIONS = ["move", "wait"] as const;
+export type Action = typeof ACTIONS[number];
+
+export interface Observation {
+  // Your encoder must map observable state to 32 rates in 0..150 Hz.
+  sensoryHz: readonly number[];
+  legal: readonly Action[];
+}
+
+export const adapter: NeuralTaskAdapter<Observation, Action> = {
+  id: TASK_ID,
+  encoderVersion: ENCODER_VERSION,
+  actions: ACTIONS,
+  encode: observation => Float32Array.from(observation.sensoryHz),
+  legalActions: observation => observation.legal,
+};
+
+export function createController(runtime: TaskNeuralRuntime, modelId: string, seed = 1977) {
+  const readout = new NeuralReadout({ actions: ACTIONS, modelId, seed });
+  return new NeuralTaskController(runtime, readout, adapter);
+}
+'''.replace("TASK_ID", json.dumps(activity_id)).replace("ENCODER_VERSION", json.dumps(payload["encoderVersion"]))
+    with target.open("x", encoding="utf-8") as output:
+        output.write(json.dumps(payload, indent=2) + "\n")
+    with adapter.open("x", encoding="utf-8") as output:
+        output.write(source)
+    print(f"Wrote {target} and {adapter}. Next: docs/neural-tasks.md")
 
 
 if __name__ == "__main__":

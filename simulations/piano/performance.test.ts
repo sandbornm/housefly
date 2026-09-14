@@ -88,6 +88,12 @@ test("articulated legs have clearance from the other leg chains", () => {
   }
 });
 
+test("hovering wings beat much faster than the thorax bob", () => {
+  assert.notEqual(hoverPose(0).wingAngle, hoverPose(0.04).wingAngle);
+  assert.ok(Math.abs(hoverPose(0.08).wingAngle - hoverPose(0).wingAngle) > 0.1);
+  assert.equal(hoverPose(0, true).wingAngle, hoverPose(0.4, true).wingAngle);
+});
+
 test("pause is deterministic; looping is continuous; reduced motion does not suppress strikes", () => {
   assert.deepEqual(sixLegPerformance(2.1, true), sixLegPerformance(2.1, true));
   assert.deepEqual(sixLegPerformance(0, true), sixLegPerformance(TOTAL_BEATS, true));

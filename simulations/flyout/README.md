@@ -1,10 +1,15 @@
 # Flyout
 
-Standalone Three.js / Rapier / Tone arcade baseball at `/simulations/flyout/` on the existing Vite server. All fly anatomy, the ballpark, bat, and fruit are procedural geometry. Autonomous batting and fielding now use an experimental full-connectome spiking model with learned task readouts. This is not validated biological baseball cognition.
+Standalone Three.js / Rapier / Tone arcade baseball at `/simulations/flyout/` on the existing Vite server. The flies use the NeuroMechFly v2 CT-scan body (EPFL / Apache-2.0). The park, bat, and fruit stay procedural. Play is framed like a batting video game: batter's-eye and pitcher's mound during the at-bat, then a tight follow on the ball, not a full-diamond isometric. Autonomous batting and fielding use an experimental full-connectome spiking model with learned task readouts. This is not validated biological baseball cognition.
 
-The shared `ActivityConnectome` uses the existing WebGL renderer for both the full anatomy panel and one framed, world-space miniature. Both receive the active actor's actual neural frame through `updateNeural`, without event projections or invented excitation. The miniature follows the batter through contact, then a moving fielder or possessor; outcomes preserve the actor. Class bars summarize actual state, not baseball task channels. The display uses 60,000 sampled edges; computation uses all 5,536,347 retained edges and 139,662 neurons.
+The shared `ActivityConnectome` uses the existing WebGL renderer for both the full anatomy panel and one framed, world-space miniature. Both receive the active actor's actual neural frame through `updateNeural`, without event projections or invented excitation. The miniature follows the batter through contact, then a moving fielder or possessor; outcomes preserve the actor. Class bars summarize actual state, not baseball task channels. Fielders walk with a tripod gait, reach with the front legs to pick up, and lift those legs to throw; the batter leans into the swing. The display uses 60,000 sampled edges; computation uses all 5,536,347 retained edges and 139,662 neurons.
 
 ## Neural Control
+
+Neural play and neural fielding are enabled by default, after real model loading.
+Pitch scheduling, turn management, runners and arcade physics are game-engine
+operations, not neural pitching or whole-game biological control. The footer
+states that distinction. Manual inputs are explicit overrides, not fallbacks.
 
 `neural-bridge.ts` creates ten `AsyncNeuralRuntime` clients: nine independent fielding-role states and a separate batter state, reset when the batter changes. They share the core's immutable graph and one neural worker, never mutable neuron state. There is also Tone's unrelated audio-clock worker. Loading or inference failure disables autonomous controls; manual controls and physics remain available. There is no scripted motor fallback.
 
@@ -14,16 +19,16 @@ Every actor advances 10 neural milliseconds per accepted batch, requested no mor
 
 ## Calibration
 
-`calibrate.mjs` runs real full-graph responses offline and writes `calibration.json`. Teachers in `neural-calibration.ts` are confined to that offline path; browser startup restores learned weights only. Calibration used seed 7193, 192 scripted observation trials, 100 ms model windows, and 12 supervised optimizer passes per recorded response. Validation used 48 separate trials (24 per applicable head) without training. The recorded run took 26.4 seconds.
+`calibrate.mjs` runs real full-graph responses offline and writes `calibration.json`. Teachers in `neural-calibration.ts` are confined to that offline path; browser startup restores learned weights only. Calibration uses the same 10 ms model window as play (seed 7193, 192 scripted observation trials, 24 shuffled replay epochs over copied measured rates). Validation uses 48 separate trials after that replay, without further training. The loader rejects an artifact whose `windowsMs` does not match play.
 
 | Readout | Held-Out Correct | Accuracy |
 | --- | ---: | ---: |
-| Movement | 5/24 | 20.8% |
-| Handling | 15/24 | 62.5% |
-| Swing | 12/24 | 50.0% |
-| Aim | 8/24 | 33.3% |
+| Movement | 7/24 | 29.2% |
+| Handling | 14/24 | 58.3% |
+| Swing | 14/24 | 58.3% |
+| Aim | 12/24 | 50.0% |
 
-These small, weak validation results are not evidence of competent play or biological validity. Offline observations differ from the evolving game; short online windows and delayed commands compound errors. During play, sampled decisions actually submitted to actuators receive bounded outcome reinforcement after the result. Unperformed predictions, manual actions, and greedy validation predictions are never reinforced or used to overwrite an action. The roster status tooltip reports calibration metrics.
+These small, still-weak validation results are not evidence of competent play or biological validity. Offline observations differ from the evolving game, and delayed worker commands compound errors. During play, sampled decisions actually submitted to actuators receive bounded outcome reinforcement after the result. Unperformed predictions, manual actions, and greedy validation predictions are never reinforced or used to overwrite an action. The roster status tooltip reports calibration metrics.
 
 Turf and clay use deterministic, repeating canvas textures with subtle bump detail. A 2048-pixel directional shadow map, bat and ball details, shared seat materials, instanced contact shadows, and a reusable trail buffer sharpen the field without postprocessing. The camera reserves space for the roster, activity panel, and controls; the miniature has a dark backing and a minimum projected size. The full panel remains visible on phones. Production builds with a non-root base expose an `All demos` backlink to `import.meta.env.BASE_URL`.
 
@@ -51,7 +56,7 @@ Run from the repository root with its installed dependencies and server:
 ```sh
 npx tsc -p simulations/flyout/tsconfig.json
 node --test simulations/flyout/game.test.ts simulations/flyout/neural-adapter.test.ts
-FLYOUT_URL=http://127.0.0.1:5186/simulations/flyout/ node simulations/flyout/neural.verify.mjs
+FLYOUT_URL=http://127.0.0.1:5180/simulations/flyout/ node simulations/flyout/neural.verify.mjs
 # Explicit offline recalibration, not needed to start the game:
 node simulations/flyout/calibrate.mjs
 ```
@@ -61,3 +66,11 @@ Adapter tests cover encoding, separate actor states, no-output/fault behavior, p
 `neural.verify.mjs` checks shared-worker ownership, actual actor frames, neural/world clocks, autonomous movement, pause, neural silencing without physics stoppage, failure-closed loading, and desktop/mobile anatomy pixels and layout. It writes screenshots and `verification/neural-report.json`, not a recording. `window.__flyout` is a read-only diagnostic snapshot. The older `verify.mjs`, `fielding.verify.mjs`, `activity.verify.mjs`, and previously recorded media describe the former scripted/event-driven version and are not neural-controller verification. Parent integration owns production builds and sequential re-recording.
 
 Limitations: arcade runner/throw rules above, no network play, no regulation pitch variety, no captured audio in the video. Typography uses Google Fonts with local fallbacks. The external parent build/navigation owns integration; this directory changes no root configuration.
+
+`scripts/record_flyout.mjs` writes new `docs/media/flyout-neural-current.mp4`
+and `.png`, preserving earlier media. Its fixed 30-second take retains weak play
+without motor interventions. `verification/recording-neural-current.json` includes
+the applied-decision log (actual 128 rate features, hashes, ticks and commands),
+ablation QC and separate model/world clocks. The bounded 2,048-entry log is checked
+for capture completeness. Set `FLYOUT_URL` to the coordinated frozen-build URL;
+FFmpeg uses two threads. The recorder is not run automatically by tests.
