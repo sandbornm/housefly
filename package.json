@@ -24,7 +24,7 @@
     "@playwright/test": "^1.63.0",
     "@types/three": "^0.186.0",
     "typescript": "^5.6.3",
-    "vite": "^8.3.0"
+    "vite": "^8.3.3"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.20.0",
